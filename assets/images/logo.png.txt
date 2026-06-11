@@ -1,0 +1,2 @@
+Placeholder for logo asset.
+Replace with actual TurfX logo (recommended: 512x512 PNG).
