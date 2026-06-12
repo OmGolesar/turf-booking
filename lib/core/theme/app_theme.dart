@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 import 'app_typography.dart';
 import 'app_radius.dart';
@@ -18,8 +19,7 @@ class AppTheme {
       brightness: Brightness.light,
       colorScheme: _lightColorScheme,
       scaffoldBackgroundColor: AppColors.backgroundLight,
-      fontFamily: 'Inter',
-      textTheme: _textTheme(Brightness.light),
+      textTheme: GoogleFonts.interTextTheme(_textTheme(Brightness.light)),
       appBarTheme: _appBarTheme(Brightness.light),
       cardTheme: _cardTheme(Brightness.light),
       elevatedButtonTheme: _elevatedButtonTheme,
@@ -42,8 +42,7 @@ class AppTheme {
       brightness: Brightness.dark,
       colorScheme: _darkColorScheme,
       scaffoldBackgroundColor: AppColors.backgroundDark,
-      fontFamily: 'Inter',
-      textTheme: _textTheme(Brightness.dark),
+      textTheme: GoogleFonts.interTextTheme(_textTheme(Brightness.dark)),
       appBarTheme: _appBarTheme(Brightness.dark),
       cardTheme: _cardTheme(Brightness.dark),
       elevatedButtonTheme: _elevatedButtonTheme,

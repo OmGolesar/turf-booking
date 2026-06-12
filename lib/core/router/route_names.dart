@@ -1,39 +1,35 @@
-/// Named route constants for TurfX.
+/// Named route path constants for GoRouter.
 ///
-/// Centralizes all route paths to prevent string duplication
-/// and enable compile-time safety.
-class RouteNames {
+/// Use these constants everywhere instead of hardcoding strings.
+abstract class RouteNames {
   RouteNames._();
 
-  // ── Root ──────────────────────────────────────────────────
-  static const String splash = '/';
-  static const String welcome = '/welcome';
-
   // ── Auth ──────────────────────────────────────────────────
-  static const String login = '/login';
-  static const String signup = '/signup';
-  static const String otp = '/otp';
+  static const splash = '/';
+  static const welcome = '/welcome';
+  static const login = '/login';
+  static const signup = '/signup';
+  static const otp = '/otp';
 
-  // ── Main Shell (Bottom Nav) ───────────────────────────────
-  static const String home = '/home';
-  static const String myBookings = '/my-bookings';
-  static const String profile = '/profile';
+  // ── Main Shell ────────────────────────────────────────────
+  static const home = '/home';
+  static const myBookings = '/my-bookings';
+  static const profile = '/profile';
 
   // ── Turf ──────────────────────────────────────────────────
-  static const String turfListing = '/turfs';
-  static const String turfDetail = '/turfs/:id';
+  static const turfListing = '/turfs';
+  static const turfDetail = '/turfs/:id';
 
   // ── Booking Flow ──────────────────────────────────────────
-  static const String dateSelection = '/booking/date';
-  static const String slotSelection = '/booking/slot';
-  static const String bookingSummary = '/booking/summary';
-  static const String payment = '/booking/payment';
-  static const String bookingConfirmation = '/booking/confirmation';
+  static const dateSelection = '/booking/date';
+  static const slotSelection = '/booking/slots';
+  static const bookingSummary = '/booking/summary';
+  static const payment = '/booking/payment';
+  static const bookingConfirmation = '/booking/confirmation';
 
-  // ── Profile Sub-routes ────────────────────────────────────
-  static const String settings = '/profile/settings';
-  static const String bookingHistory = '/profile/booking-history';
+  // ── Profile ───────────────────────────────────────────────
+  static const settings = '/settings';
 
-  /// Helper to generate turf detail path with ID.
+  // ── Helpers ───────────────────────────────────────────────
   static String turfDetailPath(String id) => '/turfs/$id';
 }

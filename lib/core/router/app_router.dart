@@ -1,47 +1,126 @@
-/// GoRouter configuration for TurfX.
-///
-/// Defines the complete route tree with:
-/// - Auth guard redirects
-/// - ShellRoute for bottom navigation
-/// - Nested routes for booking flow
-///
-/// Will be fully implemented in Step 2 with GoRouter dependency.
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-// TODO: Implement with GoRouter in Step 2
-//
-// final GoRouter appRouter = GoRouter(
-//   initialLocation: RouteNames.splash,
-//   debugLogDiagnostics: kDebugMode,
-//   redirect: _authGuard,
-//   routes: [
-//     // Splash & Welcome
-//     GoRoute(path: RouteNames.splash, ...),
-//     GoRoute(path: RouteNames.welcome, ...),
-//
-//     // Auth routes
-//     GoRoute(path: RouteNames.login, ...),
-//     GoRoute(path: RouteNames.signup, ...),
-//     GoRoute(path: RouteNames.otp, ...),
-//
-//     // Main shell with bottom navigation
-//     ShellRoute(
-//       builder: (context, state, child) => MainShell(child: child),
-//       routes: [
-//         GoRoute(path: RouteNames.home, ...),
-//         GoRoute(path: RouteNames.myBookings, ...),
-//         GoRoute(path: RouteNames.profile, ...),
-//       ],
-//     ),
-//
-//     // Turf routes
-//     GoRoute(path: RouteNames.turfListing, ...),
-//     GoRoute(path: RouteNames.turfDetail, ...),
-//
-//     // Booking flow
-//     GoRoute(path: RouteNames.dateSelection, ...),
-//     GoRoute(path: RouteNames.slotSelection, ...),
-//     GoRoute(path: RouteNames.bookingSummary, ...),
-//     GoRoute(path: RouteNames.payment, ...),
-//     GoRoute(path: RouteNames.bookingConfirmation, ...),
-//   ],
-// );
+import 'route_names.dart';
+import '../../features/auth/presentation/screens/welcome_screen.dart';
+import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../features/auth/presentation/screens/signup_screen.dart';
+import '../../features/auth/presentation/screens/otp_screen.dart';
+import '../../features/home/presentation/screens/home_screen.dart';
+import '../../features/turf_listing/presentation/screens/turf_listing_screen.dart';
+import '../../features/turf_detail/presentation/screens/turf_detail_screen.dart';
+import '../../features/booking/presentation/screens/date_selection_screen.dart';
+import '../../features/booking/presentation/screens/slot_selection_screen.dart';
+import '../../features/booking/presentation/screens/booking_summary_screen.dart';
+import '../../features/booking/presentation/screens/payment_screen.dart';
+import '../../features/booking/presentation/screens/booking_confirmation_screen.dart';
+import '../../features/my_bookings/presentation/screens/my_bookings_screen.dart';
+import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/profile/presentation/screens/settings_screen.dart';
+import '../widgets/shell/main_shell.dart';
+
+/// Riverpod provider exposing the [GoRouter] instance.
+final appRouterProvider = Provider<GoRouter>((ref) {
+  return GoRouter(
+    initialLocation: RouteNames.welcome,
+    debugLogDiagnostics: false,
+    routes: [
+      // ── Auth Routes ─────────────────────────────────────────
+      GoRoute(
+        path: RouteNames.welcome,
+        builder: (context, state) => const WelcomeScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.login,
+        builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.signup,
+        builder: (context, state) => const SignupScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.otp,
+        builder: (context, state) {
+          final phone = state.uri.queryParameters['phone'] ?? '';
+          return OtpScreen(phone: phone);
+        },
+      ),
+
+      // ── Main Shell (Bottom Nav) ──────────────────────────────
+      ShellRoute(
+        builder: (context, state, child) => MainShell(child: child),
+        routes: [
+          GoRoute(
+            path: RouteNames.home,
+            builder: (context, state) => const HomeScreen(),
+          ),
+          GoRoute(
+            path: RouteNames.myBookings,
+            builder: (context, state) => const MyBookingsScreen(),
+          ),
+          GoRoute(
+            path: RouteNames.profile,
+            builder: (context, state) => const ProfileScreen(),
+          ),
+        ],
+      ),
+
+      // ── Turf Routes ─────────────────────────────────────────
+      GoRoute(
+        path: RouteNames.turfListing,
+        builder: (context, state) {
+          final category = state.uri.queryParameters['category'];
+          return TurfListingScreen(initialCategory: category);
+        },
+      ),
+      GoRoute(
+        path: RouteNames.turfDetail,
+        builder: (context, state) {
+          final id = state.pathParameters['id'] ?? '';
+          return TurfDetailScreen(turfId: id);
+        },
+      ),
+
+      // ── Booking Flow ────────────────────────────────────────
+      GoRoute(
+        path: RouteNames.dateSelection,
+        builder: (context, state) {
+          final turfId = state.uri.queryParameters['turfId'] ?? '';
+          return DateSelectionScreen(turfId: turfId);
+        },
+      ),
+      GoRoute(
+        path: RouteNames.slotSelection,
+        builder: (context, state) {
+          final turfId = state.uri.queryParameters['turfId'] ?? '';
+          final date = state.uri.queryParameters['date'] ?? '';
+          return SlotSelectionScreen(turfId: turfId, date: date);
+        },
+      ),
+      GoRoute(
+        path: RouteNames.bookingSummary,
+        builder: (context, state) => const BookingSummaryScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.payment,
+        builder: (context, state) => const PaymentScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.bookingConfirmation,
+        builder: (context, state) => const BookingConfirmationScreen(),
+      ),
+
+      // ── Settings ────────────────────────────────────────────
+      GoRoute(
+        path: RouteNames.settings,
+        builder: (context, state) => const SettingsScreen(),
+      ),
+    ],
+    errorBuilder: (context, state) => Scaffold(
+      body: Center(
+        child: Text('Page not found: ${state.uri}'),
+      ),
+    ),
+  );
+});
