@@ -33,15 +33,16 @@ class _SlotSelectionScreenState extends State<SlotSelectionScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ── Header ────────────────────────────────────────────
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Pick Your Time Slots',
                     style: textTheme.headlineSmall
                         ?.copyWith(fontWeight: FontWeight.w800)),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 Text(
                   widget.date.isEmpty ? 'Today' : widget.date,
                   style: textTheme.bodyMedium?.copyWith(
@@ -49,29 +50,32 @@ class _SlotSelectionScreenState extends State<SlotSelectionScreen> {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
                 // Legend
                 Row(
                   children: [
-                    _Legend(color: AppColors.primary.withValues(alpha: 0.15), label: 'Available'),
-                    const SizedBox(width: 16),
+                    _Legend(
+                        color: AppColors.primary.withValues(alpha: 0.15),
+                        label: 'Available'),
+                    const SizedBox(width: 20),
                     _Legend(
                         color: colorScheme.onSurface.withValues(alpha: 0.1),
                         label: 'Booked'),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 20),
                     _Legend(color: AppColors.primary, label: 'Selected'),
                   ],
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 16),
+
+          // ── Slot Grid ─────────────────────────────────────────
           Expanded(
             child: GridView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                childAspectRatio: 2.2,
+                crossAxisCount: 4,
+                childAspectRatio: 2.6,
                 mainAxisSpacing: 10,
                 crossAxisSpacing: 10,
               ),
@@ -97,15 +101,13 @@ class _SlotSelectionScreenState extends State<SlotSelectionScreen> {
                 return GestureDetector(
                   onTap: isBooked
                       ? null
-                      : () {
-                          setState(() {
+                      : () => setState(() {
                             if (isSelected) {
                               _selected.remove(slot);
                             } else {
                               _selected.add(slot);
                             }
-                          });
-                        },
+                          }),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 150),
                     decoration: BoxDecoration(
@@ -115,8 +117,8 @@ class _SlotSelectionScreenState extends State<SlotSelectionScreen> {
                           ? [
                               BoxShadow(
                                 color: AppColors.primary.withValues(alpha: 0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 3),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
                               )
                             ]
                           : null,
@@ -138,24 +140,45 @@ class _SlotSelectionScreenState extends State<SlotSelectionScreen> {
               },
             ),
           ),
-          // Bottom bar
-          Padding(
-            padding: const EdgeInsets.all(16),
+
+          // ── Bottom Bar ────────────────────────────────────────
+          Container(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 12,
+                  offset: const Offset(0, -4),
+                ),
+              ],
+            ),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 if (_selected.isNotEmpty)
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.only(bottom: 10),
                     child: Row(
                       children: [
-                        Text('${_selected.length} slot(s) selected  •  ',
-                            style: textTheme.bodyMedium),
+                        Text(
+                          '${_selected.length} slot${_selected.length > 1 ? 's' : ''} selected',
+                          style: textTheme.bodyMedium,
+                        ),
+                        const Text('  •  '),
                         Text(
                           '₹${800 * _selected.length}',
                           style: textTheme.bodyMedium?.copyWith(
                             color: AppColors.primary,
                             fontWeight: FontWeight.w800,
                           ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          '₹800/slot',
+                          style: textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurface.withValues(alpha: 0.4)),
                         ),
                       ],
                     ),
@@ -167,13 +190,22 @@ class _SlotSelectionScreenState extends State<SlotSelectionScreen> {
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    height: 52,
                     decoration: BoxDecoration(
                       gradient: _selected.isEmpty
                           ? const LinearGradient(
                               colors: [Colors.grey, Colors.grey])
                           : AppColors.primaryGradient,
                       borderRadius: BorderRadius.circular(14),
+                      boxShadow: _selected.isEmpty
+                          ? []
+                          : [
+                              BoxShadow(
+                                color: AppColors.primary.withValues(alpha: 0.35),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              )
+                            ],
                     ),
                     child: Center(
                       child: Text(
@@ -206,9 +238,16 @@ class _Legend extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Container(width: 14, height: 14,
-            decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(4))),
+        Container(
+          width: 14,
+          height: 14,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ),
         const SizedBox(width: 6),
         Text(label, style: Theme.of(context).textTheme.bodySmall),
       ],

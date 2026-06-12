@@ -92,44 +92,26 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedCategory = 0;
-  bool _refreshing = false;
 
   Future<void> _onRefresh() async {
-    setState(() => _refreshing = true);
     await Future.delayed(const Duration(seconds: 1));
-    if (mounted) setState(() => _refreshing = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
-      backgroundColor: colorScheme.surface,
       body: RefreshIndicator(
         onRefresh: _onRefresh,
         color: AppColors.primary,
         child: CustomScrollView(
           slivers: [
-            // ── App Bar ─────────────────────────────────────────
-            SliverAppBar(
-              pinned: true,
-              expandedHeight: 120,
-              backgroundColor: colorScheme.surface,
-              elevation: 0,
-              flexibleSpace: FlexibleSpaceBar(
-                background: _buildHeader(context),
-              ),
-              bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(60),
-                child: _buildSearchBar(context),
-              ),
-            ),
+            // ── Top Header + Search ────────────────────────────
+            SliverToBoxAdapter(child: _buildTopSection(context)),
 
-            // ── Category Chips ───────────────────────────────────
-            SliverToBoxAdapter(child: _buildCategories()),
+            // ── Category Chips ─────────────────────────────────
+            SliverToBoxAdapter(child: _buildCategories(context)),
 
-            // ── Nearby Turfs ─────────────────────────────────────
+            // ── Nearby Turfs ───────────────────────────────────
             SliverToBoxAdapter(
               child: _buildSectionHeader(
                 context,
@@ -139,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             SliverToBoxAdapter(child: _buildNearbyList()),
 
-            // ── Popular Turfs ────────────────────────────────────
+            // ── Popular Turfs ──────────────────────────────────
             SliverToBoxAdapter(
               child: _buildSectionHeader(
                 context,
@@ -160,105 +142,108 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildTopSection(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+    final top = MediaQuery.of(context).padding.top;
+
     return Container(
-      padding: EdgeInsets.fromLTRB(
-          20, MediaQuery.of(context).padding.top + 12, 20, 0),
-      child: Row(
+      color: colorScheme.surface,
+      padding: EdgeInsets.fromLTRB(20, top + 16, 20, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Good Morning 👋',
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.6),
+          // Header row
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Good Morning 👋',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurface.withValues(alpha: 0.6),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Find Your Turf',
+                      style: textTheme.headlineMedium
+                          ?.copyWith(fontWeight: FontWeight.w800),
+                    ),
+                  ],
+                ),
+              ),
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+                child: const Icon(Icons.notifications_outlined,
+                    color: AppColors.primary),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Search bar
+          GestureDetector(
+            onTap: () => context.go(RouteNames.turfListing),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.search, color: AppColors.primary, size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Search turfs, sports, location...',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurface.withValues(alpha: 0.45),
+                      ),
+                    ),
                   ),
-                ),
-                Text(
-                  'Find Your Turf',
-                  style: textTheme.headlineMedium
-                      ?.copyWith(fontWeight: FontWeight.w800),
-                ),
-              ],
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.tune,
+                        color: AppColors.primary, size: 16),
+                  ),
+                ],
+              ),
             ),
           ),
-          CircleAvatar(
-            radius: 22,
-            backgroundColor: AppColors.primary.withValues(alpha: 0.15),
-            child: const Icon(Icons.notifications_outlined,
-                color: AppColors.primary),
-          ),
+          const SizedBox(height: 8),
         ],
       ),
     );
   }
 
-  Widget _buildSearchBar(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-      child: GestureDetector(
-        onTap: () => context.go(RouteNames.turfListing),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.search, color: AppColors.primary, size: 20),
-              const SizedBox(width: 10),
-              Text(
-                'Search turfs, sports, location...',
-                style: TextStyle(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.5),
-                ),
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.tune, color: AppColors.primary, size: 16),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCategories() {
+  Widget _buildCategories(BuildContext context) {
     return SizedBox(
-      height: 90,
+      height: 80,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         itemCount: _categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        separatorBuilder: (_, __) => const SizedBox(width: 10),
         itemBuilder: (context, i) {
           final selected = _selectedCategory == i;
           return GestureDetector(
             onTap: () {
               setState(() => _selectedCategory = i);
-              context.go('${RouteNames.turfListing}?category=${_categories[i]['label']}');
+              context.go(
+                  '${RouteNames.turfListing}?category=${_categories[i]['label']}');
             },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
               decoration: BoxDecoration(
                 gradient: selected ? AppColors.primaryGradient : null,
                 color: selected
@@ -275,22 +260,23 @@ class _HomeScreenState extends State<HomeScreen> {
                       ]
                     : null,
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(_categories[i]['icon']!, style: const TextStyle(fontSize: 22)),
-                  const SizedBox(height: 4),
+                  Text(_categories[i]['icon']!,
+                      style: const TextStyle(fontSize: 18)),
+                  const SizedBox(width: 8),
                   Text(
                     _categories[i]['label']!,
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: selected
                           ? Colors.white
                           : Theme.of(context)
                               .colorScheme
                               .onSurface
-                              .withValues(alpha: 0.7),
+                              .withValues(alpha: 0.75),
                     ),
                   ),
                 ],
@@ -321,7 +307,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           GestureDetector(
             onTap: onSeeAll,
-            child: Text(
+            child: const Text(
               'See All →',
               style: TextStyle(
                 color: AppColors.primary,
@@ -337,7 +323,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildNearbyList() {
     return SizedBox(
-      height: 230,
+      height: 240,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -358,15 +344,15 @@ class _NearbyTurfCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return GestureDetector(
-      onTap: () =>
-          context.go(RouteNames.turfDetailPath(turf['id'] as String)),
+      onTap: () => context.go(RouteNames.turfDetailPath(turf['id'] as String)),
       child: Container(
         width: 200,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          color: Theme.of(context).colorScheme.surface,
+          color: colorScheme.surface,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.08),
@@ -382,16 +368,19 @@ class _NearbyTurfCard extends StatelessWidget {
             // Image
             Stack(
               children: [
-                Image.network(
-                  turf['image'] as String,
-                  height: 130,
+                SizedBox(
+                  height: 140,
                   width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    height: 130,
-                    color: AppColors.primary.withValues(alpha: 0.2),
-                    child: const Icon(Icons.sports_soccer,
-                        size: 48, color: AppColors.primary),
+                  child: Image.network(
+                    turf['image'] as String,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      color: AppColors.primary.withValues(alpha: 0.15),
+                      child: const Center(
+                        child: Icon(Icons.sports_soccer,
+                            size: 44, color: AppColors.primary),
+                      ),
+                    ),
                   ),
                 ),
                 Positioned(
@@ -401,7 +390,7 @@ class _NearbyTurfCard extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.6),
+                      color: Colors.black.withValues(alpha: 0.65),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -431,10 +420,7 @@ class _NearbyTurfCard extends StatelessWidget {
                   Text(
                     turf['location'] as String,
                     style: textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withValues(alpha: 0.5)),
+                        color: colorScheme.onSurface.withValues(alpha: 0.5)),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -481,8 +467,7 @@ class _PopularTurfTile extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return GestureDetector(
-      onTap: () =>
-          context.go(RouteNames.turfDetailPath(turf['id'] as String)),
+      onTap: () => context.go(RouteNames.turfDetailPath(turf['id'] as String)),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         decoration: BoxDecoration(
@@ -504,17 +489,17 @@ class _PopularTurfTile extends StatelessWidget {
                 topLeft: Radius.circular(16),
                 bottomLeft: Radius.circular(16),
               ),
-              child: Image.network(
-                turf['image'] as String,
+              child: SizedBox(
                 width: 100,
                 height: 100,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  width: 100,
-                  height: 100,
-                  color: AppColors.primary.withValues(alpha: 0.15),
-                  child: const Icon(Icons.sports_soccer,
-                      color: AppColors.primary, size: 36),
+                child: Image.network(
+                  turf['image'] as String,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    color: AppColors.primary.withValues(alpha: 0.15),
+                    child: const Icon(Icons.sports_soccer,
+                        color: AppColors.primary, size: 36),
+                  ),
                 ),
               ),
             ),
@@ -535,7 +520,7 @@ class _PopularTurfTile extends StatelessWidget {
                       children: [
                         const Icon(Icons.location_on_outlined,
                             size: 12, color: Colors.grey),
-                        const SizedBox(width: 3),
+                        const SizedBox(width: 2),
                         Expanded(
                           child: Text(
                             turf['location'] as String,
@@ -587,6 +572,7 @@ class _PopularTurfTile extends StatelessWidget {
               padding: const EdgeInsets.only(right: 14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     '₹${turf['price']}',
@@ -597,8 +583,8 @@ class _PopularTurfTile extends StatelessWidget {
                   ),
                   Text(
                     '/hr',
-                    style: textTheme.bodySmall
-                        ?.copyWith(color: colorScheme.onSurface.withValues(alpha: 0.4)),
+                    style: textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurface.withValues(alpha: 0.4)),
                   ),
                 ],
               ),

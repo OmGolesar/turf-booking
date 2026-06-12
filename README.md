@@ -1,68 +1,17 @@
-# TurfX
+# turfx
 
-> Premium Turf Booking Application — Built with Flutter
-
-## Overview
-
-TurfX is a production-grade mobile application for discovering and booking sports turfs. Built with Clean Architecture, Riverpod state management, and Material 3 design.
-
-## Tech Stack
-
-| Technology | Purpose |
-|---|---|
-| **Flutter** | Cross-platform UI framework |
-| **Riverpod** | State management & DI |
-| **GoRouter** | Declarative navigation |
-| **Dio** | HTTP client |
-| **Material 3** | Design system |
-
-## Architecture
-
-```
-lib/
-├── core/          # Cross-cutting: theme, network, widgets, router, utils
-├── features/      # Feature modules (auth, home, booking, etc.)
-│   └── <feature>/
-│       ├── domain/        # Entities, repositories (abstract), use cases
-│       ├── data/          # Models, data sources, repository implementations
-│       └── presentation/  # Screens, widgets, Riverpod providers
-├── shared/        # Shared domain & data utilities
-├── main.dart      # Entry point
-└── app.dart       # MaterialApp.router setup
-```
-
-## Features (MVP)
-
-- Authentication (Email, OTP, Google Sign-In)
-- Home (Search, Nearby, Popular, Categories)
-- Turf Listing (Infinite scroll, Filters, Sort)
-- Turf Detail (Carousel, Amenities, Reviews, Slots)
-- Booking Flow (Date → Slot → Summary → Payment → Confirmation)
-- My Bookings (Upcoming, Completed, Cancel)
-- Profile (User details, Settings)
+A new Flutter project.
 
 ## Getting Started
 
-```bash
-# Install dependencies
-flutter pub get
+This project is a starting point for a Flutter application.
 
-# Run in debug mode
-flutter run
+A few resources to get you started if this is your first Flutter project:
 
-# Build APK
-flutter build apk --release
-```
+- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
+- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
 
-## Performance
-
-Optimized for low-end Android devices:
-- Const constructors & RepaintBoundary
-- Lazy image loading with caching
-- Shimmer skeletons for perceived performance
-- Paginated lists with auto-dispose providers
-- 60 FPS target
-
-## License
-
-Proprietary — All rights reserved.
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.

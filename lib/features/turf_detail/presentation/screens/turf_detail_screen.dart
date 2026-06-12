@@ -35,7 +35,6 @@ const _mockTurfs = {
   },
 };
 
-// Default data for unknown IDs
 const _defaultTurf = {
   'name': 'TurfX Arena',
   'location': 'Mumbai, Maharashtra',
@@ -76,11 +75,9 @@ class _TurfDetailScreenState extends State<TurfDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final turf = (_mockTurfs[widget.turfId] ?? _defaultTurf)
-        as Map<String, dynamic>;
+    final turf = (_mockTurfs[widget.turfId] ?? _defaultTurf) as Map<String, dynamic>;
     final images = (turf['images'] as List).cast<String>();
-    final amenities =
-        (turf['amenities'] as List).cast<Map<String, dynamic>>();
+    final amenities = (turf['amenities'] as List).cast<Map<String, dynamic>>();
     final slots = (turf['slots'] as List).cast<String>();
     final booked = (turf['bookedSlots'] as List).cast<String>();
 
@@ -88,9 +85,44 @@ class _TurfDetailScreenState extends State<TurfDetailScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
+      // ── Book Now Bottom Bar (fixed, not floatingActionButton) ──────────
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          child: GestureDetector(
+            onTap: () => context.go(
+              '${RouteNames.dateSelection}?turfId=${widget.turfId}',
+            ),
+            child: Container(
+              height: 54,
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.4),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: const Center(
+                child: Text(
+                  '📅  Book This Turf',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
       body: CustomScrollView(
         slivers: [
-          // ── Image Carousel App Bar ─────────────────────────
+          // ── Image Carousel App Bar ───────────────────────────
           SliverAppBar(
             expandedHeight: 280,
             pinned: true,
@@ -120,7 +152,7 @@ class _TurfDetailScreenState extends State<TurfDetailScreen> {
                       ),
                     ),
                   ),
-                  // Dark overlay at bottom
+                  // Dark gradient overlay at bottom
                   const Align(
                     alignment: Alignment.bottomCenter,
                     child: DecoratedBox(
@@ -166,7 +198,7 @@ class _TurfDetailScreenState extends State<TurfDetailScreen> {
           // ── Content ─────────────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -222,8 +254,7 @@ class _TurfDetailScreenState extends State<TurfDetailScreen> {
                       ),
                     ],
                   ),
-
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
                   Text(
                     '${turf['reviews']} reviews',
                     style: textTheme.bodySmall?.copyWith(
@@ -232,11 +263,11 @@ class _TurfDetailScreenState extends State<TurfDetailScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 20),
-                  const Divider(),
                   const SizedBox(height: 16),
+                  const Divider(),
+                  const SizedBox(height: 14),
 
-                  // ── Price ──────────────────────────────────────
+                  // Price & Sport
                   Row(
                     children: [
                       Text(
@@ -255,7 +286,7 @@ class _TurfDetailScreenState extends State<TurfDetailScreen> {
                       const Spacer(),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           gradient: AppColors.primaryGradient,
                           borderRadius: BorderRadius.circular(8),
@@ -272,14 +303,12 @@ class _TurfDetailScreenState extends State<TurfDetailScreen> {
                     ],
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 22),
 
-                  // ── Description ────────────────────────────────
-                  Text(
-                    'About',
-                    style: textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w800),
-                  ),
+                  // Description
+                  Text('About',
+                      style: textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w800)),
                   const SizedBox(height: 8),
                   Text(
                     turf['description'] as String,
@@ -289,14 +318,12 @@ class _TurfDetailScreenState extends State<TurfDetailScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 22),
 
-                  // ── Amenities ──────────────────────────────────
-                  Text(
-                    'Amenities',
-                    style: textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w800),
-                  ),
+                  // Amenities
+                  Text('Amenities',
+                      style: textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w800)),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 10,
@@ -326,14 +353,12 @@ class _TurfDetailScreenState extends State<TurfDetailScreen> {
                         .toList(),
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 22),
 
-                  // ── Available Slots ────────────────────────────
-                  Text(
-                    'Available Slots — Today',
-                    style: textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w800),
-                  ),
+                  // Available Slots
+                  Text('Available Slots — Today',
+                      style: textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w800)),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 10,
@@ -369,50 +394,12 @@ class _TurfDetailScreenState extends State<TurfDetailScreen> {
                       );
                     }).toList(),
                   ),
-
-                  const SizedBox(height: 100), // Space for FAB
                 ],
               ),
             ),
           ),
         ],
       ),
-
-      // ── Book Now FAB ───────────────────────────────────────
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: GestureDetector(
-          onTap: () => context.go(
-            '${RouteNames.dateSelection}?turfId=${widget.turfId}',
-          ),
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            decoration: BoxDecoration(
-              gradient: AppColors.primaryGradient,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.4),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: const Center(
-              child: Text(
-                '📅  Book This Turf',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
