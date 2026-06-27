@@ -50,6 +50,28 @@ class AppSpacing {
   /// Gap between list items
   static const double listGap = 12.0;
 
+  /// Gap between cards in horizontal scrollers
+  static const double cardGap = 14.0;
+
+  /// Gap between a section header and its content
+  static const double sectionHeaderGap = 20.0;
+
   /// Bottom nav bar height
   static const double bottomNavHeight = 80.0;
+
+  // ── Component Heights ─────────────────────────────────────
+  /// Primary CTA height (Nike/Linear standard)
+  static const double buttonHeightPrimary = 52.0;
+
+  /// Secondary CTA height
+  static const double buttonHeightSecondary = 48.0;
+
+  /// Tertiary CTA height
+  static const double buttonHeightTertiary = 40.0;
+
+  /// Category / filter chip height
+  static const double chipHeight = 40.0;
+
+  /// Minimum accessible touch target
+  static const double touchTarget = 44.0;
 }

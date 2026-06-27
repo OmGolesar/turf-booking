@@ -1,2 +1,2 @@
-/// My bookings Riverpod providers.
+// My bookings Riverpod providers.
 // TODO: Implement

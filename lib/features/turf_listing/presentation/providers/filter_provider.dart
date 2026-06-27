@@ -1,2 +1,2 @@
-/// Filter state Riverpod provider.
+// Filter state Riverpod provider.
 // TODO: Implement

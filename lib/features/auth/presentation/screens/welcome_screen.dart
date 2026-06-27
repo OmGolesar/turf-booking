@@ -9,7 +9,6 @@ class WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
@@ -81,12 +80,12 @@ class WelcomeScreen extends StatelessWidget {
                 const Spacer(flex: 3),
 
                 // ── Stats Row ─────────────────────────────────────
-                Row(
+                const Row(
                   children: [
                     _StatChip(label: '500+', sub: 'Turfs'),
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16),
                     _StatChip(label: '50K+', sub: 'Bookings'),
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16),
                     _StatChip(label: '4.8★', sub: 'Rating'),
                   ],
                 ),

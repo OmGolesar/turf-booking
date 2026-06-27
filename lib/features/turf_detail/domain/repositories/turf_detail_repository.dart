@@ -1,7 +1,7 @@
 import '../entities/turf_detail.dart';
 import '../entities/review.dart';
 import '../entities/time_slot.dart';
-import '../../../core/errors/failures.dart';
+import '../../../../core/errors/failures.dart';
 
 abstract class TurfDetailRepository {
   Future<({TurfDetail? data, Failure? failure})> getTurfDetail(String turfId);

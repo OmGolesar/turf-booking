@@ -1,7 +1,7 @@
-/// Auth provider for Riverpod state management.
-///
-/// Manages authentication state across the app.
-/// Will be fully implemented in Step 4 with Riverpod.
+// Auth provider for Riverpod state management.
+//
+// Manages authentication state across the app.
+// Will be fully implemented in Step 4 with Riverpod.
 
 // TODO: Implement in Step 4
 //

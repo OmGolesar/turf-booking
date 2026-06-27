@@ -62,7 +62,7 @@ class _SlotSelectionScreenState extends State<SlotSelectionScreen> {
                         color: colorScheme.onSurface.withValues(alpha: 0.1),
                         label: 'Booked'),
                     const SizedBox(width: 20),
-                    _Legend(color: AppColors.primary, label: 'Selected'),
+                    const _Legend(color: AppColors.primary, label: 'Selected'),
                   ],
                 ),
               ],

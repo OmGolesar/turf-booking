@@ -81,7 +81,7 @@ class BookingConfirmationScreen extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    _ConfRow(label: 'Booking ID', value: '#TRF-20249812'),
+                    const _ConfRow(label: 'Booking ID', value: '#TRF-20249812'),
                     const Divider(height: 24),
                     const _ConfRow(label: 'Turf', value: 'Green Arena'),
                     const Divider(height: 24),

@@ -26,7 +26,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _SectionLabel('Appearance'),
+            const _SectionLabel('Appearance'),
             const SizedBox(height: 8),
             _SettingsCard(
               children: [
@@ -42,7 +42,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
 
             const SizedBox(height: 20),
-            _SectionLabel('Notifications'),
+            const _SectionLabel('Notifications'),
             const SizedBox(height: 8),
             _SettingsCard(
               children: [
@@ -72,11 +72,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
 
             const SizedBox(height: 20),
-            _SectionLabel('About'),
+            const _SectionLabel('About'),
             const SizedBox(height: 8),
             _SettingsCard(
               children: [
-                _InfoTile(
+                const _InfoTile(
                   icon: Icons.info_outline,
                   label: 'App Version',
                   trailing: '1.0.0',
@@ -202,7 +202,7 @@ class _SwitchTile extends StatelessWidget {
               Switch(
                 value: value,
                 onChanged: onChanged,
-                activeColor: AppColors.primary,
+                activeThumbColor: AppColors.primary,
               ),
             ],
           ),

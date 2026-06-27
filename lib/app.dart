@@ -17,7 +17,9 @@ class TurfXApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'TurfX',
       debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.system,
+      // Dark is TurfX's primary identity (Nike Run Club inspired).
+      // Light theme stays available for the Settings toggle.
+      themeMode: ThemeMode.dark,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       routerConfig: router,
