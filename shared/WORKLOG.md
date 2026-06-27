@@ -102,3 +102,30 @@
 - 70% Nike Run Club (athletic, bold, dark, performance-focused)
 - 20% Airbnb (clean cards, trust-building, search UX)
 - 10% Linear (minimal, precise, developer-grade polish)
+
+---
+
+## Entry 003
+
+**Date:** 2026-06-27
+**Agent:** Claude Code (Execution Engineer)
+**Status:** Figma-First Handoff Prepared
+
+### Completed:
+* Read exported planning chat from `ChatGPT-TurfX App Concept.md`
+* Confirmed the "100 screenshots" target came from planning guidance, not from `SKILL.MD`
+* Confirmed `research/` and `design/` folders now exist on disk
+* Created `design/FIGMA_BUILD_PLAN.md` as the next-phase handoff
+* Reframed next step as **Phase 2.5 - Figma Design Lock**, not Phase 3 implementation
+
+### Pending:
+* Antigravity should build Figma foundations, components, and primary flows from `design/FIGMA_BUILD_PLAN.md`
+* Claude Code should wait for approved Figma hierarchy before broad Flutter restyling
+* Claude Code can later audit Phase 1 implementation against the Figma-locked design system
+
+### Blocked:
+* None
+
+### Next Recommended Action:
+* **Antigravity:** create Figma design system and flow screens first
+* **Claude Code:** after Figma approval, implement reusable Flutter components and remove remaining generic/gradient-heavy UI
