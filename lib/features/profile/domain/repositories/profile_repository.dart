@@ -1,5 +1,5 @@
 import '../entities/user_profile.dart';
-import '../../../core/errors/failures.dart';
+import '../../../../core/errors/failures.dart';
 
 abstract class ProfileRepository {
   Future<({UserProfile? data, Failure? failure})> getProfile();

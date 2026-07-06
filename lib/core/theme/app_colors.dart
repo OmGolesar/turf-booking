@@ -24,6 +24,17 @@ class AppColors {
   static const Color surfaceDark = Color(0xFF161B22);
   static const Color cardDark = Color(0xFF21262D);
 
+  /// True Nike-black canvas for the most athletic dark surfaces.
+  static const Color backgroundDarkPure = Color(0xFF111111);
+
+  /// iOS-style elevated dark surface (sheets, raised cards).
+  static const Color surfaceDarkElevated = Color(0xFF1C1C1E);
+
+  // ── Text on Dark ──────────────────────────────────────────
+  static const Color textOnDarkPrimary = Color(0xFFFFFFFF);
+  static const Color textOnDarkSecondary = Color(0xFF9CA3AF);
+  static const Color textOnDarkTertiary = Color(0xFF6B7280);
+
   // ── Text Colors ───────────────────────────────────────────
   static const Color textPrimaryLight = Color(0xFF1A1A2E);
   static const Color textSecondaryLight = Color(0xFF6B7280);
@@ -38,6 +49,13 @@ class AppColors {
   static const Color warning = Color(0xFFF59E0B);
   static const Color error = Color(0xFFEF4444);
   static const Color info = Color(0xFF3B82F6);
+
+  // ── Social-Proof Badges ───────────────────────────────────
+  /// "Top Rated" quality badge.
+  static const Color badgeGold = Color(0xFFFFD700);
+
+  /// "Popular" / trending badge.
+  static const Color badgeHot = Color(0xFFFF6B35);
 
   // ── Gradient Colors ───────────────────────────────────────
   static const LinearGradient primaryGradient = LinearGradient(

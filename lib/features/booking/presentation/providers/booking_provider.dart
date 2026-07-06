@@ -1,2 +1,2 @@
-/// Booking flow Riverpod providers.
+// Booking flow Riverpod providers.
 // TODO: Implement

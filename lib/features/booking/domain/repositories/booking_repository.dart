@@ -1,5 +1,5 @@
 import '../entities/booking.dart';
-import '../../../core/errors/failures.dart';
+import '../../../../core/errors/failures.dart';
 
 abstract class BookingRepository {
   Future<({Booking? data, Failure? failure})> createBooking({

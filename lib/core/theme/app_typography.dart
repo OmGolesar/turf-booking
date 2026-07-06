@@ -12,7 +12,7 @@ class AppTypography {
   // ── Display ───────────────────────────────────────────────
   static const TextStyle displayLarge = TextStyle(
     fontFamily: _fontFamily,
-    fontSize: 32,
+    fontSize: 34,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.5,
     height: 1.2,
@@ -36,8 +36,9 @@ class AppTypography {
   // ── Heading ───────────────────────────────────────────────
   static const TextStyle headlineLarge = TextStyle(
     fontFamily: _fontFamily,
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: FontWeight.w600,
+    letterSpacing: -0.25,
     height: 1.3,
   );
 
@@ -58,22 +59,22 @@ class AppTypography {
   // ── Title ─────────────────────────────────────────────────
   static const TextStyle titleLarge = TextStyle(
     fontFamily: _fontFamily,
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: FontWeight.w600,
     height: 1.4,
   );
 
   static const TextStyle titleMedium = TextStyle(
     fontFamily: _fontFamily,
-    fontSize: 14,
-    fontWeight: FontWeight.w600,
+    fontSize: 16,
+    fontWeight: FontWeight.w500,
     height: 1.4,
   );
 
   static const TextStyle titleSmall = TextStyle(
     fontFamily: _fontFamily,
-    fontSize: 12,
-    fontWeight: FontWeight.w600,
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
     height: 1.4,
   );
 

@@ -3,6 +3,7 @@
 /// Failures represent expected error states and are returned
 /// from repositories instead of throwing exceptions.
 /// This enables clean error handling in the presentation layer.
+library;
 
 /// Base failure class.
 abstract class Failure {

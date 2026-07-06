@@ -59,16 +59,16 @@ class MyBookingsScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('My Bookings'),
-          bottom: TabBar(
+          bottom: const TabBar(
             indicatorColor: AppColors.primary,
             labelColor: AppColors.primary,
-            tabs: const [
+            tabs: [
               Tab(text: 'Upcoming'),
               Tab(text: 'Completed'),
             ],
           ),
         ),
-        body: TabBarView(
+        body: const TabBarView(
           children: [
             _BookingList(bookings: _upcoming, isUpcoming: true),
             _BookingList(bookings: _completed, isUpcoming: false),

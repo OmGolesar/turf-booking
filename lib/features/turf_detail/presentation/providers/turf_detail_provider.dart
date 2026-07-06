@@ -1,2 +1,2 @@
-/// Turf detail Riverpod providers.
+// Turf detail Riverpod providers.
 // TODO: Implement

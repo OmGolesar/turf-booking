@@ -1,5 +1,5 @@
 import '../entities/user.dart';
-import '../../../core/errors/failures.dart';
+import '../../../../core/errors/failures.dart';
 
 /// Abstract auth repository contract.
 ///

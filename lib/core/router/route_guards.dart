@@ -1,10 +1,10 @@
-/// Route guard logic for TurfX.
-///
-/// Handles authentication-based redirects:
-/// - Unauthenticated users → Welcome/Login
-/// - Authenticated users trying to access auth pages → Home
-///
-/// Will be implemented in Step 2 with GoRouter.
+// Route guard logic for TurfX.
+//
+// Handles authentication-based redirects:
+// - Unauthenticated users → Welcome/Login
+// - Authenticated users trying to access auth pages → Home
+//
+// Will be implemented in Step 2 with GoRouter.
 
 // TODO: Implement in Step 2
 //

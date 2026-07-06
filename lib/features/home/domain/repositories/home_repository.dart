@@ -1,6 +1,6 @@
 import '../entities/turf_summary.dart';
 import '../entities/category.dart';
-import '../../../core/errors/failures.dart';
+import '../../../../core/errors/failures.dart';
 
 /// Abstract home repository.
 abstract class HomeRepository {

@@ -2,6 +2,7 @@
 ///
 /// These are thrown by data sources and caught in repository
 /// implementations to be mapped to [Failure] objects.
+library;
 
 /// Thrown when a server returns an error response.
 class ServerException implements Exception {

@@ -1,2 +1,2 @@
-/// Profile Riverpod providers.
+// Profile Riverpod providers.
 // TODO: Implement
