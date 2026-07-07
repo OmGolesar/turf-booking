@@ -1,401 +1,316 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/router/route_names.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/turfx_widgets.dart';
 
-const _mockTurfs = {
-  '1': {
-    'name': 'Green Arena',
-    'location': 'Andheri West, Mumbai, Maharashtra',
-    'rating': 4.8,
-    'reviews': 124,
-    'price': 800,
-    'sport': 'Football',
-    'description':
-        'Green Arena is one of Mumbai\'s premier football turfs, featuring FIFA-standard synthetic grass, floodlights for evening games, and modern locker rooms. Perfect for friendly matches, tournaments, and practice sessions.',
-    'images': [
-      'https://images.unsplash.com/photo-1529900748604-07564a03e7a6?w=600',
-      'https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=600',
-      'https://images.unsplash.com/photo-1486286701208-1d58e9338013?w=600',
-    ],
-    'amenities': [
-      {'icon': '🚿', 'label': 'Changing Room'},
-      {'icon': '🅿️', 'label': 'Parking'},
-      {'icon': '💡', 'label': 'Flood Lights'},
-      {'icon': '🥤', 'label': 'Refreshments'},
-      {'icon': '📶', 'label': 'Free Wi-Fi'},
-      {'icon': '🏆', 'label': 'Tournaments'},
-    ],
-    'slots': [
-      '6:00 AM', '7:00 AM', '8:00 AM', '10:00 AM',
-      '2:00 PM', '4:00 PM', '6:00 PM', '8:00 PM', '9:00 PM',
-    ],
-    'bookedSlots': ['8:00 AM', '4:00 PM', '8:00 PM'],
-  },
-};
-
-const _defaultTurf = {
-  'name': 'TurfX Arena',
-  'location': 'Mumbai, Maharashtra',
-  'rating': 4.7,
-  'reviews': 89,
-  'price': 1000,
-  'sport': 'Football',
-  'description': 'A premium sports facility with top-class amenities.',
-  'images': [
-    'https://images.unsplash.com/photo-1529900748604-07564a03e7a6?w=600',
-  ],
-  'amenities': [
-    {'icon': '🚿', 'label': 'Changing Room'},
-    {'icon': '🅿️', 'label': 'Parking'},
-    {'icon': '💡', 'label': 'Flood Lights'},
-  ],
-  'slots': ['6:00 AM', '8:00 AM', '10:00 AM', '4:00 PM', '6:00 PM'],
-  'bookedSlots': ['8:00 AM'],
-};
-
-class TurfDetailScreen extends StatefulWidget {
+/// Turf Detail (Dark) — Figma spec.
+class TurfDetailScreen extends StatelessWidget {
   final String turfId;
   const TurfDetailScreen({super.key, required this.turfId});
 
-  @override
-  State<TurfDetailScreen> createState() => _TurfDetailScreenState();
-}
+  static const _heroImage =
+      'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80';
 
-class _TurfDetailScreenState extends State<TurfDetailScreen> {
-  int _imageIndex = 0;
-  final _pageController = PageController();
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
+  static const _amenities = [
+    _Amenity(Icons.wb_incandescent_outlined, 'Floodlights'),
+    _Amenity(Icons.directions_car_outlined, 'Parking'),
+    _Amenity(Icons.meeting_room_outlined, 'Changing'),
+    _Amenity(Icons.shower_outlined, 'Showers'),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final turf = (_mockTurfs[widget.turfId] ?? _defaultTurf) as Map<String, dynamic>;
-    final images = (turf['images'] as List).cast<String>();
-    final amenities = (turf['amenities'] as List).cast<Map<String, dynamic>>();
-    final slots = (turf['slots'] as List).cast<String>();
-    final booked = (turf['bookedSlots'] as List).cast<String>();
-
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
-      // ── Book Now Bottom Bar (fixed, not floatingActionButton) ──────────
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-          child: GestureDetector(
-            onTap: () => context.go(
-              '${RouteNames.dateSelection}?turfId=${widget.turfId}',
-            ),
-            child: Container(
-              height: 54,
-              decoration: BoxDecoration(
-                gradient: AppColors.primaryGradient,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.4),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
+      backgroundColor: AppColors.bg,
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: [
+              _buildHero(context),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 200),
+                sliver: SliverList.list(
+                  children: [
+                    Text('Amenities',
+                        style: AppTypography.h2
+                            .copyWith(color: AppColors.textPrimary)),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        for (var i = 0; i < _amenities.length; i++) ...[
+                          Expanded(child: _AmenityTile(item: _amenities[i])),
+                          if (i != _amenities.length - 1)
+                            const SizedBox(width: 8),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Text('About the Turf',
+                        style: AppTypography.h2
+                            .copyWith(color: AppColors.textPrimary)),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Central Arena is a state-of-the-art 5-a-side artificial grass '
+                      'facility located in the heart of the city. Featuring '
+                      'professional-grade floodlighting, premium turf quality, '
+                      'and modern locker rooms. Perfect for evening leagues '
+                      'and casual competitive matches.',
+                      style: AppTypography.bodyXsLong.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: GestureDetector(
+                        onTap: () {},
+                        child: Text(
+                          'Read More ˅',
+                          style: AppTypography.labelMdCta.copyWith(
+                            color: AppColors.accentGreen,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Text('Location',
+                        style: AppTypography.h2
+                            .copyWith(color: AppColors.textPrimary)),
+                    const SizedBox(height: 12),
+                    Container(
+                      height: 190,
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: AppColors.border, width: 1),
+                        image: const DecorationImage(
+                          image: NetworkImage(
+                            'https://maps.googleapis.com/maps/api/staticmap?center=Downtown&zoom=14&size=600x300&maptype=roadmap',
+                          ),
+                          fit: BoxFit.cover,
+                          opacity: 0.6,
+                        ),
+                      ),
+                      child: Stack(
+                        children: [
+                          const Center(
+                            child: Icon(Icons.location_on,
+                                color: AppColors.primary, size: 40),
+                          ),
+                          Positioned(
+                            bottom: 8,
+                            right: 8,
+                            child: TurfRoundIconButton(
+                              icon: Icons.open_in_new_rounded,
+                              onPressed: () {},
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      '124 Arena Blvd, Downtown District\nOpen today: 06:00 - 23:00',
+                      style: AppTypography.bodyXs
+                          .copyWith(color: AppColors.textSecondary),
+                    ),
+                  ],
+                ),
               ),
-              child: const Center(
-                child: Text(
-                  '📅  Book This Turf',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
+            ],
+          ),
+
+          // Top overlay bar (back + heart)
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            left: 20,
+            right: 20,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TurfRoundIconButton(
+                  icon: Icons.arrow_back_rounded,
+                  onPressed: () => context.pop(),
+                ),
+                TurfRoundIconButton(
+                  icon: Icons.favorite_border_rounded,
+                  onPressed: () {},
+                ),
+              ],
+            ),
+          ),
+
+          // Bottom booking action bar
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: SafeArea(
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: AppColors.surfaceAlt,
+                  border: Border(
+                    top: BorderSide(color: AppColors.border, width: 1),
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0x33000000),
+                      blurRadius: 20,
+                      offset: Offset(0, -4),
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                child: Row(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Starting from',
+                            style: AppTypography.bodyXs
+                                .copyWith(color: AppColors.textSecondary)),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text('\$45',
+                                style: AppTypography.displayLg.copyWith(
+                                  color: AppColors.textPrimary,
+                                )),
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 6, left: 2),
+                              child: Text('/hour',
+                                  style: AppTypography.bodyXs.copyWith(
+                                    color: AppColors.textSecondary,
+                                  )),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    TurfPrimaryButton(
+                      label: 'Select Date & Slot',
+                      fullWidth: false,
+                      onPressed: () => context.go(
+                        '${RouteNames.slotSelection}?turfId=$turfId&date=',
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
-        ),
+        ],
       ),
-      body: CustomScrollView(
-        slivers: [
-          // ── Image Carousel App Bar ───────────────────────────
-          SliverAppBar(
-            expandedHeight: 280,
-            pinned: true,
-            backgroundColor: Colors.black,
-            leading: IconButton(
-              onPressed: () => context.pop(),
-              icon: const CircleAvatar(
-                backgroundColor: Colors.black45,
-                child: Icon(Icons.arrow_back, color: Colors.white),
-              ),
-            ),
-            flexibleSpace: FlexibleSpaceBar(
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  PageView.builder(
-                    controller: _pageController,
-                    itemCount: images.length,
-                    onPageChanged: (i) => setState(() => _imageIndex = i),
-                    itemBuilder: (_, i) => Image.network(
-                      images[i],
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: AppColors.primary.withValues(alpha: 0.2),
-                        child: const Icon(Icons.sports_soccer,
-                            size: 72, color: AppColors.primary),
-                      ),
-                    ),
-                  ),
-                  // Dark gradient overlay at bottom
-                  const Align(
-                    alignment: Alignment.bottomCenter,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Colors.transparent, Colors.black54],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                      ),
-                      child: SizedBox(height: 80, width: double.infinity),
-                    ),
-                  ),
-                  // Dot indicators
-                  Positioned(
-                    bottom: 12,
-                    left: 0,
-                    right: 0,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(
-                        images.length,
-                        (i) => AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          margin: const EdgeInsets.symmetric(horizontal: 3),
-                          width: _imageIndex == i ? 20 : 6,
-                          height: 6,
-                          decoration: BoxDecoration(
-                            color: _imageIndex == i
-                                ? AppColors.primary
-                                : Colors.white54,
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+    );
+  }
 
-          // ── Content ─────────────────────────────────────────
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+  Widget _buildHero(BuildContext context) {
+    return SliverToBoxAdapter(
+      child: SizedBox(
+        height: 480,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.network(
+              _heroImage,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                color: AppColors.surface,
+                child: const Icon(Icons.sports_soccer_rounded,
+                    size: 80, color: AppColors.primary),
+              ),
+            ),
+            const DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: AppColors.detailHeroOverlay,
+              ),
+            ),
+            Positioned(
+              left: 20,
+              right: 20,
+              bottom: 24,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Name & Rating
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Text(
-                          turf['name'] as String,
-                          style: textTheme.headlineMedium
-                              ?.copyWith(fontWeight: FontWeight.w800),
-                        ),
-                      ),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 6),
+                            horizontal: 12, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.amber.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(10),
+                          color: AppColors.primaryTint,
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                              color: AppColors.primaryTintStrong, width: 1),
                         ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.star_rounded,
-                                color: Colors.amber, size: 16),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${turf['rating']}',
-                              style: textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                color: Colors.amber.shade700,
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          'PREMIUM',
+                          style: AppTypography.labelMdCta.copyWith(
+                            color: AppColors.accentGreen,
+                          ),
                         ),
                       ),
+                      const SizedBox(width: 8),
+                      const TurfRatingChip(rating: 4.9, reviewCount: 128),
                     ],
                   ),
-
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 12),
+                  Text('Central Arena',
+                      style: AppTypography.displayLg
+                          .copyWith(color: AppColors.textPrimary)),
+                  const SizedBox(height: 4),
                   Row(
                     children: [
                       const Icon(Icons.location_on_outlined,
-                          size: 14, color: Colors.grey),
+                          size: 13, color: AppColors.textSecondary),
                       const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          turf['location'] as String,
-                          style: textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurface.withValues(alpha: 0.5),
-                          ),
-                        ),
-                      ),
+                      Text('Downtown District, 2.5km away',
+                          style: AppTypography.bodyXs.copyWith(
+                              color: AppColors.textSecondary)),
                     ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${turf['reviews']} reviews',
-                    style: textTheme.bodySmall?.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-                  const Divider(),
-                  const SizedBox(height: 14),
-
-                  // Price & Sport
-                  Row(
-                    children: [
-                      Text(
-                        '₹${turf['price']}',
-                        style: textTheme.headlineSmall?.copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                      Text(
-                        ' / hour',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurface.withValues(alpha: 0.5),
-                        ),
-                      ),
-                      const Spacer(),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          gradient: AppColors.primaryGradient,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          turf['sport'] as String,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 22),
-
-                  // Description
-                  Text('About',
-                      style: textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w800)),
-                  const SizedBox(height: 8),
-                  Text(
-                    turf['description'] as String,
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurface.withValues(alpha: 0.7),
-                      height: 1.6,
-                    ),
-                  ),
-
-                  const SizedBox(height: 22),
-
-                  // Amenities
-                  Text('Amenities',
-                      style: textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w800)),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: amenities
-                        .map((a) => Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: colorScheme.surfaceContainerHighest,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(a['icon'] as String,
-                                      style: const TextStyle(fontSize: 16)),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    a['label'] as String,
-                                    style: textTheme.bodySmall?.copyWith(
-                                        fontWeight: FontWeight.w600),
-                                  ),
-                                ],
-                              ),
-                            ))
-                        .toList(),
-                  ),
-
-                  const SizedBox(height: 22),
-
-                  // Available Slots
-                  Text('Available Slots — Today',
-                      style: textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w800)),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: slots.map((slot) {
-                      final isBooked = booked.contains(slot);
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: isBooked
-                              ? colorScheme.onSurface.withValues(alpha: 0.1)
-                              : AppColors.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: isBooked
-                                ? Colors.transparent
-                                : AppColors.primary.withValues(alpha: 0.3),
-                          ),
-                        ),
-                        child: Text(
-                          slot,
-                          style: textTheme.bodySmall?.copyWith(
-                            color: isBooked
-                                ? colorScheme.onSurface.withValues(alpha: 0.3)
-                                : AppColors.primary,
-                            fontWeight: FontWeight.w700,
-                            decoration: isBooked
-                                ? TextDecoration.lineThrough
-                                : null,
-                          ),
-                        ),
-                      );
-                    }).toList(),
                   ),
                 ],
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Amenity {
+  final IconData icon;
+  final String label;
+  const _Amenity(this.icon, this.label);
+}
+
+class _AmenityTile extends StatelessWidget {
+  const _AmenityTile({required this.item});
+  final _Amenity item;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+        border: Border.all(color: AppColors.border, width: 1),
+      ),
+      child: Column(
+        children: [
+          Icon(item.icon, size: 20, color: AppColors.accentGreen),
+          const SizedBox(height: 8),
+          Text(
+            item.label,
+            style: AppTypography.labelXxs.copyWith(
+              color: AppColors.textSecondary,
             ),
           ),
         ],

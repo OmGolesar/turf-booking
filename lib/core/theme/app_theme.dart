@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 import 'app_typography.dart';
@@ -7,12 +6,12 @@ import 'app_radius.dart';
 
 /// TurfX Material 3 theme configuration.
 ///
-/// Provides complete [ThemeData] for both light and dark modes,
-/// with custom color scheme, typography, and component themes.
+/// Dark is the primary identity — tokens are pulled from
+/// the Figma "turf-dak-mode" spec. Light theme is preserved
+/// for the settings toggle but is not the design driver.
 class AppTheme {
   AppTheme._();
 
-  // ── Light Theme ───────────────────────────────────────────
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
@@ -29,19 +28,18 @@ class AppTheme {
       bottomNavigationBarTheme: _bottomNavTheme(Brightness.light),
       chipTheme: _chipTheme(Brightness.light),
       dividerTheme: const DividerThemeData(
-        color: AppColors.divider,
+        color: Color(0xFFE5E7EB),
         thickness: 1,
       ),
     );
   }
 
-  // ── Dark Theme ────────────────────────────────────────────
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
       colorScheme: _darkColorScheme,
-      scaffoldBackgroundColor: AppColors.backgroundDark,
+      scaffoldBackgroundColor: AppColors.bg,
       textTheme: GoogleFonts.interTextTheme(_textTheme(Brightness.dark)),
       appBarTheme: _appBarTheme(Brightness.dark),
       cardTheme: _cardTheme(Brightness.dark),
@@ -52,20 +50,19 @@ class AppTheme {
       bottomNavigationBarTheme: _bottomNavTheme(Brightness.dark),
       chipTheme: _chipTheme(Brightness.dark),
       dividerTheme: const DividerThemeData(
-        color: AppColors.dividerDark,
+        color: AppColors.border,
         thickness: 1,
       ),
     );
   }
 
-  // ── Color Schemes ─────────────────────────────────────────
   static const ColorScheme _lightColorScheme = ColorScheme.light(
     primary: AppColors.primary,
-    onPrimary: Colors.white,
-    primaryContainer: AppColors.primaryLight,
-    secondary: AppColors.secondary,
-    onSecondary: Colors.white,
-    tertiary: AppColors.accent,
+    onPrimary: AppColors.onPrimary,
+    primaryContainer: AppColors.accentGreen,
+    secondary: AppColors.surfaceAlt,
+    onSecondary: AppColors.textPrimary,
+    tertiary: AppColors.accentGreen,
     surface: AppColors.surfaceLight,
     onSurface: AppColors.textPrimaryLight,
     error: AppColors.error,
@@ -74,88 +71,84 @@ class AppTheme {
 
   static const ColorScheme _darkColorScheme = ColorScheme.dark(
     primary: AppColors.primary,
-    onPrimary: Colors.white,
-    primaryContainer: AppColors.primaryDark,
-    secondary: AppColors.secondary,
-    onSecondary: Colors.white,
-    tertiary: AppColors.accent,
-    surface: AppColors.surfaceDark,
-    onSurface: AppColors.textPrimaryDark,
+    onPrimary: AppColors.onPrimary,
+    primaryContainer: AppColors.primaryTint,
+    secondary: AppColors.accentGreen,
+    onSecondary: AppColors.onPrimaryDark,
+    tertiary: AppColors.accentGreenBright,
+    surface: AppColors.surface,
+    onSurface: AppColors.textPrimary,
+    surfaceContainerHighest: AppColors.surfaceAlt,
+    outline: AppColors.border,
+    outlineVariant: AppColors.divider,
     error: AppColors.error,
     onError: Colors.white,
   );
 
-  // ── Text Theme ────────────────────────────────────────────
   static TextTheme _textTheme(Brightness brightness) {
     final color = brightness == Brightness.light
         ? AppColors.textPrimaryLight
-        : AppColors.textPrimaryDark;
+        : AppColors.textPrimary;
 
     return TextTheme(
-      displayLarge: AppTypography.displayLarge.copyWith(color: color),
-      displayMedium: AppTypography.displayMedium.copyWith(color: color),
-      displaySmall: AppTypography.displaySmall.copyWith(color: color),
-      headlineLarge: AppTypography.headlineLarge.copyWith(color: color),
-      headlineMedium: AppTypography.headlineMedium.copyWith(color: color),
-      headlineSmall: AppTypography.headlineSmall.copyWith(color: color),
-      titleLarge: AppTypography.titleLarge.copyWith(color: color),
-      titleMedium: AppTypography.titleMedium.copyWith(color: color),
-      titleSmall: AppTypography.titleSmall.copyWith(color: color),
-      bodyLarge: AppTypography.bodyLarge.copyWith(color: color),
-      bodyMedium: AppTypography.bodyMedium.copyWith(color: color),
-      bodySmall: AppTypography.bodySmall.copyWith(color: color),
-      labelLarge: AppTypography.labelLarge.copyWith(color: color),
-      labelMedium: AppTypography.labelMedium.copyWith(color: color),
-      labelSmall: AppTypography.labelSmall.copyWith(color: color),
+      displayLarge: AppTypography.displayXl.copyWith(color: color),
+      displayMedium: AppTypography.displayLg.copyWith(color: color),
+      displaySmall: AppTypography.h1.copyWith(color: color),
+      headlineLarge: AppTypography.h1.copyWith(color: color),
+      headlineMedium: AppTypography.h2.copyWith(color: color),
+      headlineSmall: AppTypography.h3.copyWith(color: color),
+      titleLarge: AppTypography.h2.copyWith(color: color),
+      titleMedium: AppTypography.h3.copyWith(color: color),
+      titleSmall: AppTypography.bodyXs.copyWith(color: color),
+      bodyLarge: AppTypography.bodyMd.copyWith(color: color),
+      bodyMedium: AppTypography.bodyXs.copyWith(color: color),
+      bodySmall: AppTypography.labelXs.copyWith(color: color),
+      labelLarge: AppTypography.labelLgBtn.copyWith(color: color),
+      labelMedium: AppTypography.labelMdCta.copyWith(color: color),
+      labelSmall: AppTypography.labelXs.copyWith(color: color),
     );
   }
 
-  // ── AppBar Theme ──────────────────────────────────────────
   static AppBarTheme _appBarTheme(Brightness brightness) {
     final isLight = brightness == Brightness.light;
     return AppBarTheme(
       elevation: 0,
-      scrolledUnderElevation: 0.5,
+      scrolledUnderElevation: 0,
       centerTitle: false,
-      backgroundColor: isLight ? AppColors.surfaceLight : AppColors.surfaceDark,
-      foregroundColor: isLight ? AppColors.textPrimaryLight : AppColors.textPrimaryDark,
-      systemOverlayStyle: isLight
-          ? SystemUiOverlayStyle.dark
-          : SystemUiOverlayStyle.light,
-      titleTextStyle: AppTypography.headlineSmall.copyWith(
-        color: isLight ? AppColors.textPrimaryLight : AppColors.textPrimaryDark,
+      backgroundColor: isLight ? AppColors.surfaceLight : AppColors.bg,
+      foregroundColor: isLight ? AppColors.textPrimaryLight : AppColors.textPrimary,
+      titleTextStyle: AppTypography.h1.copyWith(
+        color: isLight ? AppColors.textPrimaryLight : AppColors.textPrimary,
       ),
     );
   }
 
-  // ── Card Theme ────────────────────────────────────────────
   static CardThemeData _cardTheme(Brightness brightness) {
     final isLight = brightness == Brightness.light;
     return CardThemeData(
-      elevation: isLight ? 1 : 0,
-      color: isLight ? AppColors.cardLight : AppColors.cardDark,
+      elevation: 0,
+      color: isLight ? AppColors.cardLight : AppColors.bgDeep,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.md),
         side: isLight
             ? BorderSide.none
-            : const BorderSide(color: AppColors.dividerDark, width: 0.5),
+            : const BorderSide(color: AppColors.border, width: 1),
       ),
       margin: EdgeInsets.zero,
     );
   }
 
-  // ── Button Themes ─────────────────────────────────────────
   static ElevatedButtonThemeData get _elevatedButtonTheme {
     return ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.onPrimary,
         elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.sm),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
-        textStyle: AppTypography.button,
+        textStyle: AppTypography.bodyMdStrong,
       ),
     );
   }
@@ -163,13 +156,14 @@ class AppTheme {
   static OutlinedButtonThemeData get _outlinedButtonTheme {
     return OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.primary,
-        side: const BorderSide(color: AppColors.primary, width: 1.5),
+        foregroundColor: AppColors.textPrimary,
+        backgroundColor: AppColors.surfaceAlt,
+        side: const BorderSide(color: AppColors.border, width: 1),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.sm),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
-        textStyle: AppTypography.button,
+        textStyle: AppTypography.bodyMdStrong,
       ),
     );
   }
@@ -177,80 +171,75 @@ class AppTheme {
   static TextButtonThemeData get _textButtonTheme {
     return TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: AppColors.primary,
+        foregroundColor: AppColors.accentGreen,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        textStyle: AppTypography.button,
+        textStyle: AppTypography.labelMdCta,
       ),
     );
   }
 
-  // ── Input Decoration Theme ────────────────────────────────
   static InputDecorationTheme _inputDecorationTheme(Brightness brightness) {
     final isLight = brightness == Brightness.light;
     return InputDecorationTheme(
       filled: true,
-      fillColor: isLight
-          ? AppColors.backgroundLight
-          : AppColors.surfaceDark,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      fillColor: isLight ? AppColors.backgroundLight : AppColors.surface,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppRadius.sm),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         borderSide: BorderSide(
-          color: isLight ? AppColors.divider : AppColors.dividerDark,
+          color: isLight ? const Color(0xFFE5E7EB) : AppColors.border,
         ),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppRadius.sm),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         borderSide: BorderSide(
-          color: isLight ? AppColors.divider : AppColors.dividerDark,
+          color: isLight ? const Color(0xFFE5E7EB) : AppColors.border,
         ),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppRadius.sm),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         borderSide: const BorderSide(color: AppColors.primary, width: 2),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppRadius.sm),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         borderSide: const BorderSide(color: AppColors.error),
       ),
-      hintStyle: AppTypography.bodyMedium.copyWith(
-        color: isLight ? AppColors.textTertiaryLight : AppColors.textTertiaryDark,
+      hintStyle: AppTypography.bodyLg.copyWith(
+        color: isLight ? AppColors.textTertiaryLight : AppColors.textSecondary,
       ),
     );
   }
 
-  // ── Bottom Nav Theme ──────────────────────────────────────
   static BottomNavigationBarThemeData _bottomNavTheme(Brightness brightness) {
     final isLight = brightness == Brightness.light;
     return BottomNavigationBarThemeData(
-      backgroundColor: isLight ? AppColors.surfaceLight : AppColors.surfaceDark,
-      selectedItemColor: AppColors.primary,
+      backgroundColor: isLight ? AppColors.surfaceLight : AppColors.divider,
+      selectedItemColor: AppColors.onPrimary,
       unselectedItemColor: isLight
           ? AppColors.textTertiaryLight
-          : AppColors.textTertiaryDark,
+          : AppColors.textSecondaryAlt,
       type: BottomNavigationBarType.fixed,
-      elevation: 8,
-      selectedLabelStyle: AppTypography.labelSmall,
-      unselectedLabelStyle: AppTypography.labelSmall,
+      elevation: 0,
+      selectedLabelStyle: AppTypography.labelNav,
+      unselectedLabelStyle: AppTypography.labelNav,
     );
   }
 
-  // ── Chip Theme ────────────────────────────────────────────
   static ChipThemeData _chipTheme(Brightness brightness) {
     final isLight = brightness == Brightness.light;
     return ChipThemeData(
-      backgroundColor: isLight ? AppColors.backgroundLight : AppColors.surfaceDark,
-      selectedColor: AppColors.primary.withValues(alpha: 0.15),
-      labelStyle: AppTypography.labelMedium.copyWith(
-        color: isLight ? AppColors.textPrimaryLight : AppColors.textPrimaryDark,
+      backgroundColor: isLight ? AppColors.backgroundLight : AppColors.surface,
+      selectedColor: AppColors.primary,
+      labelStyle: AppTypography.bodyXs.copyWith(
+        color: isLight ? AppColors.textPrimaryLight : AppColors.textSecondary,
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.full),
       ),
       side: BorderSide(
-        color: isLight ? AppColors.divider : AppColors.dividerDark,
+        color: isLight ? const Color(0xFFE5E7EB) : AppColors.border,
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
     );
   }
 }
