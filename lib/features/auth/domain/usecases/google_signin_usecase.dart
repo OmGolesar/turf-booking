@@ -1,16 +1,3 @@
-import '../../../../shared/domain/usecases/usecase.dart';
-import '../../../../core/errors/failures.dart';
-import '../entities/user.dart';
-import '../repositories/auth_repository.dart';
-
-/// Handles Google Sign-In authentication.
-class GoogleSignInUseCase implements UseCase<User, NoParams> {
-  final AuthRepository repository;
-
-  const GoogleSignInUseCase(this.repository);
-
-  @override
-  Future<({User? data, Failure? failure})> call(NoParams params) {
-    return repository.googleSignIn();
-  }
-}
+// Google Sign-In is not enabled in Phase 6 (email-only auth).
+// This use case is kept as a placeholder stub for future implementation.
+// It will be implemented when Google Sign-In is added.

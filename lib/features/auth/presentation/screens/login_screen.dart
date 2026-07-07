@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/router/route_names.dart';
+import '../providers/auth_provider.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   bool _obscure = true;
-  bool _loading = false;
 
   @override
   void dispose() {
@@ -27,11 +28,17 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() => _loading = true);
-    // Simulate network call
-    await Future.delayed(const Duration(seconds: 1));
-    if (mounted) {
-      setState(() => _loading = false);
+    await ref.read(authNotifierProvider.notifier).login(
+      email: _emailCtrl.text.trim(),
+      password: _passwordCtrl.text,
+    );
+    if (!mounted) return;
+    final error = ref.read(authNotifierProvider).errorMessage;
+    if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error), backgroundColor: Colors.red.shade700),
+      );
+    } else {
       context.go(RouteNames.home);
     }
   }
@@ -127,11 +134,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 24),
 
                 // ── Login Button ──────────────────────────────────
-                _GradientButton(
-                  label: _loading ? 'Signing in...' : 'Sign In',
-                  loading: _loading,
-                  onTap: _submit,
-                ),
+                Builder(builder: (context) {
+                  final loading = ref.watch(authNotifierProvider).isLoading;
+                  return _GradientButton(
+                    label: loading ? 'Signing in...' : 'Sign In',
+                    loading: loading,
+                    onTap: _submit,
+                  );
+                }),
 
                 const SizedBox(height: 28),
 

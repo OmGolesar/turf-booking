@@ -1,8 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../../domain/entities/user.dart';
 
-/// User data model for API serialization.
-///
-/// Extends [User] entity with JSON serialization capabilities.
+/// Data Transfer Object for User — maps between Firestore and domain entity.
 class UserModel extends User {
   const UserModel({
     required super.id,
@@ -10,30 +10,43 @@ class UserModel extends User {
     required super.email,
     super.phone,
     super.avatarUrl,
+    super.role,
+    super.managedTurfId,
+    super.totalBookings,
+    super.favouriteTurfs,
     super.createdAt,
   });
 
-  factory UserModel.fromJson(Map<String, dynamic> json) {
+  factory UserModel.fromFirestore(DocumentSnapshot doc) {
+    final d = doc.data() as Map<String, dynamic>;
     return UserModel(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      email: json['email'] as String,
-      phone: json['phone'] as String?,
-      avatarUrl: json['avatar_url'] as String?,
-      createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'] as String)
-          : null,
+      id: doc.id,
+      name: d['name'] as String? ?? '',
+      email: d['email'] as String? ?? '',
+      phone: d['phone'] as String?,
+      avatarUrl: d['avatarUrl'] as String?,
+      role: UserRole.values.firstWhere(
+        (r) => r.name == (d['role'] as String? ?? 'user'),
+        orElse: () => UserRole.user,
+      ),
+      managedTurfId: d['managedTurfId'] as String?,
+      totalBookings: d['totalBookings'] as int? ?? 0,
+      favouriteTurfs: List<String>.from(d['favouriteTurfs'] as List? ?? []),
+      createdAt: (d['createdAt'] as Timestamp?)?.toDate(),
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'email': email,
-      'phone': phone,
-      'avatar_url': avatarUrl,
-      'created_at': createdAt?.toIso8601String(),
-    };
-  }
+  Map<String, dynamic> toFirestore() => {
+        'name': name,
+        'email': email,
+        'phone': phone,
+        'avatarUrl': avatarUrl,
+        'role': role.name,
+        'managedTurfId': managedTurfId,
+        'totalBookings': totalBookings,
+        'favouriteTurfs': favouriteTurfs,
+        'createdAt': createdAt != null
+            ? Timestamp.fromDate(createdAt!)
+            : FieldValue.serverTimestamp(),
+      };
 }

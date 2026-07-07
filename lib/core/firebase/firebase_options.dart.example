@@ -1,0 +1,7 @@
+// This file is intentionally excluded from version control.
+// To generate your own firebase_options.dart, run:
+//
+//   flutterfire configure --project=turfx-nashik --platforms=android,web
+//
+// Requires: flutterfire_cli activated via `dart pub global activate flutterfire_cli`
+// Docs: https://firebase.google.com/docs/flutter/setup

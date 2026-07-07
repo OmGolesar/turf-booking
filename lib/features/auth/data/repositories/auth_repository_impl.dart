@@ -1,74 +1,67 @@
+import 'package:firebase_auth/firebase_auth.dart' as fb;
+
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
-import '../../../../core/errors/failures.dart';
+import '../datasources/auth_remote_datasource.dart';
 
-/// Concrete implementation of [AuthRepository].
-///
-/// Coordinates between remote and local data sources,
-/// handles error mapping from exceptions to failures.
-///
-/// Will be fully implemented in Step 4.
 class AuthRepositoryImpl implements AuthRepository {
-  // final AuthRemoteDataSource remoteDataSource;
-  // final AuthLocalDataSource localDataSource;
-  // final NetworkInfo networkInfo;
+  final AuthRemoteDataSource _remote;
 
-  // AuthRepositoryImpl({
-  //   required this.remoteDataSource,
-  //   required this.localDataSource,
-  //   required this.networkInfo,
-  // });
+  const AuthRepositoryImpl(this._remote);
 
   @override
-  Future<({User? data, Failure? failure})> login({
-    required String email,
-    required String password,
-  }) async {
-    // TODO: Implement in Step 4
-    throw UnimplementedError();
+  Stream<User?> get authStateChanges => _remote.authStateChanges;
+
+  @override
+  Future<User?> getCurrentUser() => _remote.getCurrentUser();
+
+  @override
+  Future<User> login({required String email, required String password}) async {
+    try {
+      return await _remote.login(email: email, password: password);
+    } on fb.FirebaseAuthException catch (e) {
+      throw _mapFirebaseException(e);
+    }
   }
 
   @override
-  Future<({User? data, Failure? failure})> signup({
+  Future<User> signup({
     required String name,
     required String email,
     required String password,
+    String? phone,
   }) async {
-    throw UnimplementedError();
+    try {
+      return await _remote.signup(name: name, email: email, password: password, phone: phone);
+    } on fb.FirebaseAuthException catch (e) {
+      throw _mapFirebaseException(e);
+    }
   }
 
   @override
-  Future<({bool? data, Failure? failure})> sendOtp({required String phone}) async {
-    throw UnimplementedError();
-  }
+  Future<void> logout() => _remote.logout();
 
-  @override
-  Future<({User? data, Failure? failure})> verifyOtp({
-    required String phone,
-    required String otp,
-  }) async {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<({User? data, Failure? failure})> googleSignIn() async {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<({bool? data, Failure? failure})> logout() async {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<bool> isAuthenticated() async {
-    // TODO: Check local storage for token
-    return false;
-  }
-
-  @override
-  Future<User?> getCurrentUser() async {
-    // TODO: Return cached user
-    return null;
+  /// Maps Firebase auth error codes to human-readable messages.
+  Exception _mapFirebaseException(fb.FirebaseAuthException e) {
+    switch (e.code) {
+      case 'user-not-found':
+        return Exception('No account found for this email. Please sign up.');
+      case 'wrong-password':
+        return Exception('Incorrect password. Please try again.');
+      case 'email-already-in-use':
+        return Exception('An account with this email already exists. Please log in.');
+      case 'invalid-email':
+        return Exception('Please enter a valid email address.');
+      case 'weak-password':
+        return Exception('Password must be at least 6 characters.');
+      case 'network-request-failed':
+        return Exception('No internet connection. Please check your network.');
+      case 'too-many-requests':
+        return Exception('Too many attempts. Please try again later.');
+      case 'invalid-credential':
+        return Exception('Invalid email or password. Please try again.');
+      default:
+        return Exception(e.message ?? 'Authentication failed. Please try again.');
+    }
   }
 }

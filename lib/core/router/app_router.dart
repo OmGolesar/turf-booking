@@ -7,6 +7,7 @@ import '../../features/auth/presentation/screens/welcome_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/signup_screen.dart';
 import '../../features/auth/presentation/screens/otp_screen.dart';
+import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/turf_listing/presentation/screens/turf_listing_screen.dart';
 import '../../features/turf_detail/presentation/screens/turf_detail_screen.dart';
@@ -18,15 +19,44 @@ import '../../features/booking/presentation/screens/booking_confirmation_screen.
 import '../../features/my_bookings/presentation/screens/my_bookings_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/profile/presentation/screens/settings_screen.dart';
+import '../../features/admin/presentation/screens/admin_dashboard_screen.dart';
+import '../../features/admin/presentation/screens/admin_booking_form_screen.dart';
+import '../../features/admin/presentation/screens/admin_slot_manager_screen.dart';
 import '../widgets/shell/main_shell.dart';
 
 /// Riverpod provider exposing the [GoRouter] instance.
 final appRouterProvider = Provider<GoRouter>((ref) {
+  // Listen to auth state so GoRouter refreshes on auth changes.
+  final authState = ref.watch(authStateProvider);
+
   return GoRouter(
     initialLocation: RouteNames.welcome,
     debugLogDiagnostics: false,
+
+    // ── Auth Redirect Logic ────────────────────────────────────────────────
+    redirect: (context, state) {
+      final isLoggedIn = authState.value != null;
+      final isAdmin = authState.value?.isAdmin ?? false;
+      final loc = state.matchedLocation;
+
+      final isAuthRoute = loc == RouteNames.welcome ||
+          loc == RouteNames.login ||
+          loc == RouteNames.signup ||
+          loc == RouteNames.otp;
+
+      // If not logged in and trying to access protected routes → welcome
+      if (!isLoggedIn && !isAuthRoute) return RouteNames.welcome;
+
+      // If logged in and on auth screens → redirect to appropriate home
+      if (isLoggedIn && isAuthRoute) {
+        return isAdmin ? '/admin' : RouteNames.home;
+      }
+
+      return null; // No redirect needed
+    },
+
     routes: [
-      // ── Auth Routes ─────────────────────────────────────────
+      // ── Auth Routes ─────────────────────────────────────────────────────
       GoRoute(
         path: RouteNames.welcome,
         builder: (context, state) => const WelcomeScreen(),
@@ -47,7 +77,29 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      // ── Main Shell (Bottom Nav) ──────────────────────────────
+      // ── Admin Routes ─────────────────────────────────────────────────────
+      GoRoute(
+        path: '/admin',
+        builder: (context, state) => const AdminDashboardScreen(),
+        routes: [
+          GoRoute(
+            path: 'add-booking',
+            builder: (context, state) => const AdminBookingFormScreen(),
+          ),
+          GoRoute(
+            path: 'slots',
+            builder: (context, state) => const AdminSlotManagerScreen(),
+          ),
+          GoRoute(
+            path: 'edit-turf',
+            builder: (context, state) => const Scaffold(
+              body: Center(child: Text('Turf Editor — Coming Soon')),
+            ),
+          ),
+        ],
+      ),
+
+      // ── Main Shell (Bottom Nav) ──────────────────────────────────────────
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),
         routes: [
@@ -66,7 +118,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
 
-      // ── Turf Routes ─────────────────────────────────────────
+      // ── Turf Routes ──────────────────────────────────────────────────────
       GoRoute(
         path: RouteNames.turfListing,
         builder: (context, state) {
@@ -82,7 +134,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      // ── Booking Flow ────────────────────────────────────────
+      // ── Booking Flow ─────────────────────────────────────────────────────
       GoRoute(
         path: RouteNames.dateSelection,
         builder: (context, state) {
@@ -111,15 +163,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const BookingConfirmationScreen(),
       ),
 
-      // ── Settings ────────────────────────────────────────────
+      // ── Settings ─────────────────────────────────────────────────────────
       GoRoute(
         path: RouteNames.settings,
         builder: (context, state) => const SettingsScreen(),
       ),
     ],
+
     errorBuilder: (context, state) => Scaffold(
       body: Center(
-        child: Text('Page not found: ${state.uri}'),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('🔍', style: TextStyle(fontSize: 48)),
+            const SizedBox(height: 16),
+            Text('Page not found: ${state.uri}'),
+          ],
+        ),
       ),
     ),
   );
