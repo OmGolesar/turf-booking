@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/router/route_names.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/turfx_widgets.dart';
 
+/// OTP Verification (Dark) — Figma spec.
 class OtpScreen extends StatefulWidget {
   final String phone;
   const OtpScreen({super.key, required this.phone});
@@ -14,23 +18,32 @@ class OtpScreen extends StatefulWidget {
 }
 
 class _OtpScreenState extends State<OtpScreen> {
-  final List<TextEditingController> _controllers =
-      List.generate(6, (_) => TextEditingController());
-  final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
+  final _controllers = List.generate(6, (_) => TextEditingController());
+  final _focusNodes = List.generate(6, (_) => FocusNode());
   bool _loading = false;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _focusNodes.first.requestFocus();
+    });
+  }
+
+  @override
   void dispose() {
-    for (final c in _controllers) {
-      c.dispose();
-    }
-    for (final f in _focusNodes) {
-      f.dispose();
-    }
+    for (final c in _controllers) c.dispose();
+    for (final f in _focusNodes) f.dispose();
     super.dispose();
   }
 
   String get _otpCode => _controllers.map((c) => c.text).join();
+
+  void _onChanged(int i, String v) {
+    if (v.length == 1 && i < 5) _focusNodes[i + 1].requestFocus();
+    if (v.isEmpty && i > 0) _focusNodes[i - 1].requestFocus();
+    setState(() {});
+  }
 
   Future<void> _verify() async {
     if (_otpCode.length < 6) {
@@ -40,203 +53,185 @@ class _OtpScreenState extends State<OtpScreen> {
       return;
     }
     setState(() => _loading = true);
-    await Future.delayed(const Duration(seconds: 1));
+    await Future.delayed(const Duration(milliseconds: 800));
     if (mounted) {
       setState(() => _loading = false);
       context.go(RouteNames.home);
     }
   }
 
-  void _onChanged(int index, String value) {
-    if (value.length == 1 && index < 5) {
-      _focusNodes[index + 1].requestFocus();
-    } else if (value.isEmpty && index > 0) {
-      _focusNodes[index - 1].requestFocus();
-    }
-    setState(() {});
-  }
-
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
+    final phone = widget.phone.isNotEmpty ? widget.phone : '+1 (***) ***-8921';
 
     return Scaffold(
-      appBar: AppBar(
-        leading: const BackButton(),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
+      backgroundColor: AppColors.bgDeep,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 16),
-
-              // ── Header ────────────────────────────────────────
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  borderRadius: BorderRadius.circular(16),
+              const SizedBox(height: 8),
+              // Back button
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TurfRoundIconButton(
+                  icon: Icons.arrow_back_rounded,
+                  background: AppColors.surface,
+                  onPressed: () => context.pop(),
                 ),
-                child: const Icon(Icons.sms_outlined,
-                    color: Colors.white, size: 32),
               ),
-
               const SizedBox(height: 24),
 
-              Text('Verify Phone\nNumber 📲',
-                  style: textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    height: 1.2,
-                  )),
+              // Header
+              Text(
+                'Enter your phone number',
+                style: AppTypography.h1.copyWith(color: AppColors.textPrimary),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "We've sent a 6-digit verification code to the number\nbelow.",
+                style: AppTypography.bodyXs
+                    .copyWith(color: AppColors.textSecondaryAlt),
+              ),
+              const SizedBox(height: 40),
 
-              const SizedBox(height: 10),
-
-              RichText(
-                text: TextSpan(
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurface.withValues(alpha: 0.6),
-                  ),
+              // Phone display
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceAlt,
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Row(
                   children: [
-                    const TextSpan(text: 'OTP sent to '),
-                    TextSpan(
-                      text: widget.phone.isNotEmpty
-                          ? widget.phone
-                          : '+91 ••••••7890',
-                      style: TextStyle(
-                        color: colorScheme.onSurface,
-                        fontWeight: FontWeight.w700,
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceDim,
+                        borderRadius: BorderRadius.circular(999),
                       ),
+                      alignment: Alignment.center,
+                      child: const Text('🇺🇸', style: TextStyle(fontSize: 18)),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'UNITED STATES',
+                            style: AppTypography.labelMdCtaUpper.copyWith(
+                              color: AppColors.textSecondaryAlt,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            phone,
+                            style: AppTypography.bodyMd
+                                .copyWith(color: AppColors.textPrimary),
+                          ),
+                        ],
+                      ),
+                    ),
+                    TurfRoundIconButton(
+                      icon: Icons.edit_rounded,
+                      background: AppColors.surfaceDim,
+                      foreground: AppColors.accentGreen,
+                      showBorder: false,
+                      onPressed: () => context.pop(),
                     ),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 48),
-
-              // ── OTP Fields ────────────────────────────────────
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(
-                  6,
-                  (i) => SizedBox(
-                    width: 48,
-                    height: 56,
-                    child: TextFormField(
-                      controller: _controllers[i],
-                      focusNode: _focusNodes[i],
-                      keyboardType: TextInputType.number,
-                      textAlign: TextAlign.center,
-                      maxLength: 1,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      style: textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
-                      decoration: InputDecoration(
-                        counterText: '',
-                        contentPadding: EdgeInsets.zero,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: colorScheme.outline,
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: AppColors.primary,
-                            width: 2,
-                          ),
-                        ),
-                        filled: true,
-                        fillColor: _controllers[i].text.isNotEmpty
-                            ? AppColors.primary.withValues(alpha: 0.08)
-                            : null,
-                      ),
-                      onChanged: (v) => _onChanged(i, v),
-                    ),
-                  ),
-                ),
-              ),
-
               const SizedBox(height: 40),
 
-              // ── Verify Button ─────────────────────────────────
-              GestureDetector(
-                onTap: _loading ? null : _verify,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  decoration: BoxDecoration(
-                    gradient: _loading
-                        ? const LinearGradient(
-                            colors: [Colors.grey, Colors.grey])
-                        : AppColors.primaryGradient,
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: _loading
-                        ? []
-                        : [
-                            BoxShadow(
-                              color: AppColors.primary.withValues(alpha: 0.35),
-                              blurRadius: 16,
-                              offset: const Offset(0, 6),
-                            )
-                          ],
-                  ),
-                  child: Center(
-                    child: _loading
-                        ? const SizedBox(
-                            width: 22,
-                            height: 22,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white),
-                          )
-                        : const Text(
-                            'Verify OTP',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                  ),
-                ),
+              // OTP section
+              Text(
+                'Enter OTP',
+                style: AppTypography.h2.copyWith(color: AppColors.textPrimary),
+              ),
+              const SizedBox(height: 24),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: List.generate(6, (i) => _otpBox(i)),
               ),
 
               const SizedBox(height: 24),
 
+              // Resend
               Center(
-                child: TextButton(
-                  onPressed: () {},
-                  child: RichText(
-                    text: TextSpan(
-                      style: textTheme.bodyMedium,
-                      children: [
-                        TextSpan(
-                          text: "Didn't receive OTP? ",
-                          style: TextStyle(
-                            color: colorScheme.onSurface.withValues(alpha: 0.6),
-                          ),
-                        ),
-                        const TextSpan(
-                          text: 'Resend',
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
+                child: RichText(
+                  text: TextSpan(
+                    style: AppTypography.bodyXs.copyWith(
+                      color: AppColors.textSecondaryAlt,
                     ),
+                    children: [
+                      const TextSpan(text: "Didn't receive a code? "),
+                      TextSpan(
+                        text: 'Resend in 00:45',
+                        style: AppTypography.labelLgBtn.copyWith(
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
+
+              const Spacer(),
+
+              // Verify CTA
+              TurfPrimaryButton(
+                label: 'Verify & Continue',
+                trailingIcon: Icons.arrow_forward_rounded,
+                isLoading: _loading,
+                onPressed: _verify,
+              ),
+              const SizedBox(height: 24),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _otpBox(int i) {
+    final filled = _controllers[i].text.isNotEmpty;
+    return SizedBox(
+      width: 48,
+      height: 52,
+      child: TextField(
+        controller: _controllers[i],
+        focusNode: _focusNodes[i],
+        keyboardType: TextInputType.number,
+        textAlign: TextAlign.center,
+        maxLength: 1,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        style: AppTypography.displayLg.copyWith(color: AppColors.textPrimary),
+        cursorColor: AppColors.primary,
+        decoration: InputDecoration(
+          counterText: '',
+          filled: true,
+          fillColor: AppColors.bgDeep,
+          contentPadding: EdgeInsets.zero,
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            borderSide: BorderSide(
+              color: filled ? AppColors.primary : Colors.transparent,
+              width: 2,
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          ),
+        ),
+        onChanged: (v) => _onChanged(i, v),
       ),
     );
   }

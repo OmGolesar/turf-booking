@@ -99,13 +99,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
 
-      // ── Main Shell (Bottom Nav) ──────────────────────────────────────────
+      // ── Main Shell (Bottom Nav — Discover · Search · Bookings · AI) ─────
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),
         routes: [
           GoRoute(
             path: RouteNames.home,
             builder: (context, state) => const HomeScreen(),
+          ),
+          GoRoute(
+            path: RouteNames.turfListing,
+            builder: (context, state) {
+              final category = state.uri.queryParameters['category'];
+              return TurfListingScreen(initialCategory: category);
+            },
           ),
           GoRoute(
             path: RouteNames.myBookings,
@@ -116,15 +123,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const ProfileScreen(),
           ),
         ],
-      ),
-
-      // ── Turf Routes ──────────────────────────────────────────────────────
-      GoRoute(
-        path: RouteNames.turfListing,
-        builder: (context, state) {
-          final category = state.uri.queryParameters['category'];
-          return TurfListingScreen(initialCategory: category);
-        },
       ),
       GoRoute(
         path: RouteNames.turfDetail,
