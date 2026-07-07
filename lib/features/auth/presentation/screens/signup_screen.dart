@@ -1,24 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/router/route_names.dart';
+import '../providers/auth_provider.dart';
 
-class SignupScreen extends StatefulWidget {
+class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
 
   @override
-  State<SignupScreen> createState() => _SignupScreenState();
+  ConsumerState<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen> {
+class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   bool _obscure = true;
-  bool _loading = false;
 
   @override
   void dispose() {
@@ -31,10 +32,19 @@ class _SignupScreenState extends State<SignupScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() => _loading = true);
-    await Future.delayed(const Duration(seconds: 1));
-    if (mounted) {
-      setState(() => _loading = false);
+    await ref.read(authNotifierProvider.notifier).signup(
+      name: _nameCtrl.text.trim(),
+      email: _emailCtrl.text.trim(),
+      password: _passwordCtrl.text,
+      phone: _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
+    );
+    if (!mounted) return;
+    final error = ref.read(authNotifierProvider).errorMessage;
+    if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error), backgroundColor: Colors.red.shade700),
+      );
+    } else {
       context.go(RouteNames.home);
     }
   }
@@ -156,11 +166,14 @@ class _SignupScreenState extends State<SignupScreen> {
                 const SizedBox(height: 32),
 
                 // ── Submit Button ─────────────────────────────────
-                _GradientButton(
-                  label: _loading ? 'Creating account...' : 'Create Account',
-                  loading: _loading,
-                  onTap: _submit,
-                ),
+                Builder(builder: (context) {
+                  final loading = ref.watch(authNotifierProvider).isLoading;
+                  return _GradientButton(
+                    label: loading ? 'Creating account...' : 'Create Account',
+                    loading: loading,
+                    onTap: _submit,
+                  );
+                }),
 
                 const SizedBox(height: 40),
 

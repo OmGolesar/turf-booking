@@ -22,6 +22,13 @@ dependencies:
   # ── Navigation ────────────────────────────────────────────
   go_router: ^14.2.7
 
+  # ── Firebase ──────────────────────────────────────────────
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+  cloud_firestore: ^5.4.4
+  firebase_storage: ^12.3.3
+  google_sign_in: ^6.2.1
+
   # ── Networking ────────────────────────────────────────────
   dio: ^5.4.3+1
   connectivity_plus: ^6.0.3

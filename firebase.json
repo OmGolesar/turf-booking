@@ -1,0 +1,25 @@
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "turfx-nashik",
+          "appId": "1:793898272592:android:65a83ca4e9ceb755920e55",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "turfx-nashik",
+          "configurations": {
+            "android": "1:793898272592:android:65a83ca4e9ceb755920e55",
+            "web": "1:793898272592:web:c82711819716d440920e55"
+          }
+        }
+      }
+    }
+  }
+}
