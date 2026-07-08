@@ -44,10 +44,15 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Firebase — sensitive config files (do not commit API keys)
+# Firebase — platform-native config files (contain the Android/iOS app IDs).
+# Kept out of the repo so we can swap staging/prod builds via secrets later.
+# NOTE: `firebase_options.dart` IS committed on purpose. Per official
+# FlutterFire guidance, the Web/Dart config values (apiKey, appId, projectId)
+# are not secrets — they ship in every client build. Security is enforced
+# by Firestore rules + Firebase Auth. Committing it also lets CI run
+# `flutter analyze` and `flutter test` without secret injection.
 google-services.json
 GoogleService-Info.plist
-lib/core/firebase/firebase_options.dart
 
 # Firebase local shim
 .bin/
