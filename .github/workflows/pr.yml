@@ -1,0 +1,132 @@
+# TurfX — Pull Request checks
+#
+# Runs on every PR targeting `main`. Keeps the branch honest before merge:
+#   1. Formatting is enforced (`dart format`).
+#   2. Static analysis passes (`flutter analyze`).
+#   3. Tests pass (`flutter test`).
+#
+# What this workflow deliberately does NOT do (yet):
+#   - Build a signed Android/iOS artifact — the app needs
+#     `android/app/google-services.json` + `lib/core/firebase/firebase_options.dart`,
+#     both gitignored. Enable the `build-android` job below once the staging
+#     Firebase project exists and its `google-services.json` is added as a
+#     GitHub Actions secret (see the commented-out job at the bottom).
+#   - Firestore rules tests — requires committing a Node test suite under
+#     `firestore-tests/` using @firebase/rules-unit-testing. Add when the
+#     staging project exists so we can guard the booking transaction path.
+#
+# Reference: FRONTEND_BACKEND_WIRING.md
+
+name: PR
+
+on:
+  pull_request:
+    branches: [main]
+
+# Cancel any in-flight run for the same PR when a new commit is pushed.
+concurrency:
+  group: pr-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Keep in sync with the local dev version (`flutter --version`).
+  FLUTTER_VERSION: "3.44.1"
+  FLUTTER_CHANNEL: "stable"
+
+jobs:
+  format:
+    name: Format check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+
+      # Fails the job if any Dart file isn't formatted per `dart format` defaults.
+      # Fix locally with: `dart format lib test`
+      - name: dart format --set-exit-if-changed
+        run: dart format --set-exit-if-changed lib test
+
+  analyze:
+    name: Static analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+
+      - name: flutter pub get
+        run: flutter pub get
+
+      # The repo currently has pre-existing info-level lints (see PROGRESS.md /
+      # FRONTEND_BACKEND_WIRING.md §9). We fail only on warnings and errors so
+      # a green baseline is achievable without a lint sweep first. Tighten to
+      # `--fatal-infos` once existing infos are cleaned up.
+      - name: flutter analyze
+        run: flutter analyze --fatal-warnings
+
+  test:
+    name: Unit + widget tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+
+      - name: flutter pub get
+        run: flutter pub get
+
+      - name: flutter test
+        run: flutter test --reporter expanded
+
+  # ── Enable once a staging Firebase project exists ────────────────────────
+  # Uncomment when GitHub secrets are set:
+  #   GOOGLE_SERVICES_JSON      — base64 of android/app/google-services.json
+  #   FIREBASE_OPTIONS_DART     — base64 of lib/core/firebase/firebase_options.dart
+  #
+  # build-android:
+  #   name: Build Android debug APK
+  #   runs-on: ubuntu-latest
+  #   needs: [format, analyze, test]
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #
+  #     - uses: actions/setup-java@v4
+  #       with:
+  #         distribution: temurin
+  #         java-version: "17"
+  #
+  #     - uses: subosito/flutter-action@v2
+  #       with:
+  #         flutter-version: ${{ env.FLUTTER_VERSION }}
+  #         channel: ${{ env.FLUTTER_CHANNEL }}
+  #         cache: true
+  #
+  #     - name: Restore Firebase config
+  #       env:
+  #         GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+  #         FIREBASE_OPTIONS_DART: ${{ secrets.FIREBASE_OPTIONS_DART }}
+  #       run: |
+  #         echo "$GOOGLE_SERVICES_JSON" | base64 -d > android/app/google-services.json
+  #         echo "$FIREBASE_OPTIONS_DART" | base64 -d > lib/core/firebase/firebase_options.dart
+  #
+  #     - run: flutter pub get
+  #     - run: flutter build apk --debug
+  #
+  #     - uses: actions/upload-artifact@v4
+  #       with:
+  #         name: app-debug-apk
+  #         path: build/app/outputs/flutter-apk/app-debug.apk
+  #         retention-days: 7
