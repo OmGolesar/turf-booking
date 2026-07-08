@@ -1,79 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/turfx_widgets.dart';
+import '../../domain/entities/turf_summary.dart';
+import '../providers/home_provider.dart';
 
-/// Home / Discover (Dark) — Figma spec.
-class HomeScreen extends StatefulWidget {
+/// Home / Discover (Dark) — Figma spec, live-wired to Firestore.
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _catIndex = 0;
   final _searchCtrl = TextEditingController();
 
-  static const _categories = ['All', 'Football', 'Cricket', 'Tennis', 'Basketball'];
-
-  static const _nearby = [
-    _NearbyTurf(
-      id: '1',
-      name: 'Kicks Premium Arena',
-      location: 'Downtown • 1.2 km',
-      price: 45,
-      rating: 4.9,
-      image:
-          'https://images.unsplash.com/photo-1459865264687-595d652de67e?auto=format&fit=crop&w=800&q=80',
-    ),
-    _NearbyTurf(
-      id: '2',
-      name: 'Urban Indoor Pitch',
-      location: 'Westside • 3.5 km',
-      price: 55,
-      rating: 4.7,
-      image:
-          'https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=800&q=80',
-    ),
-    _NearbyTurf(
-      id: '3',
-      name: 'Central Arena',
-      location: 'Downtown District • 2.5 km',
-      price: 45,
-      rating: 4.8,
-      image:
-          'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80',
-    ),
-  ];
-
-  static const _popular = [
-    _PopularTurf(
-      id: '4',
-      name: 'Metro Cricket Nets',
-      location: 'North Park • 4 Nets',
-      price: 30,
-      rating: 4.8,
-      sport: 'CRICKET',
-      badge: 'Available Now',
-      image:
-          'https://images.unsplash.com/photo-1531415074968-036ba1b575da?auto=format&fit=crop&w=800&q=80',
-    ),
-    _PopularTurf(
-      id: '5',
-      name: 'Blue Turf Futsal',
-      location: 'East End • Indoor',
-      price: 40,
-      rating: 4.6,
-      sport: 'FUTSAL',
-      badge: 'Next: 6 PM',
-      image:
-          'https://images.unsplash.com/photo-1553778263-73a83bab9b0c?auto=format&fit=crop&w=800&q=80',
-    ),
+  static const _categories = [
+    'All',
+    'Football',
+    'Cricket',
+    'Tennis',
+    'Basketball',
   ];
 
   @override
@@ -87,7 +42,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: AppColors.bgDeep,
       body: RefreshIndicator(
-        onRefresh: () => Future.delayed(const Duration(milliseconds: 400)),
+        onRefresh: () async {
+          ref.invalidate(nearbyTurfsProvider);
+          ref.invalidate(popularTurfsProvider);
+          await ref.read(nearbyTurfsProvider.future);
+        },
         color: AppColors.primary,
         backgroundColor: AppColors.surface,
         child: CustomScrollView(
@@ -180,6 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildNearYou(BuildContext context) {
+    final nearby = ref.watch(nearbyTurfsProvider);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
       child: Column(
@@ -194,12 +154,19 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 16),
           SizedBox(
             height: 271,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.zero,
-              itemCount: _nearby.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 16),
-              itemBuilder: (context, i) => _NearYouCard(turf: _nearby[i]),
+            child: nearby.when(
+              data: (turfs) {
+                if (turfs.isEmpty) return _emptyState('No turfs nearby yet.');
+                return ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: EdgeInsets.zero,
+                  itemCount: turfs.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 16),
+                  itemBuilder: (context, i) => _NearYouCard(turf: turfs[i]),
+                );
+              },
+              loading: _skeletonRow,
+              error: (e, _) => _emptyState('Could not load turfs.'),
             ),
           ),
         ],
@@ -208,6 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildPopular(BuildContext context) {
+    final popular = ref.watch(popularTurfsProvider);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
@@ -219,73 +187,75 @@ class _HomeScreenState extends State<HomeScreen> {
             onActionTap: () => context.go(RouteNames.turfListing),
           ),
           const SizedBox(height: 16),
-          Container(
-            decoration: BoxDecoration(
-              color: AppColors.bgDeep,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: AppColors.borderMuted, width: 1),
+          popular.when(
+            data: (turfs) {
+              if (turfs.isEmpty) {
+                return _emptyState('No popular turfs yet.');
+              }
+              return Container(
+                decoration: BoxDecoration(
+                  color: AppColors.bgDeep,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: AppColors.borderMuted, width: 1),
+                ),
+                child: Column(
+                  children: List.generate(turfs.length, (i) {
+                    final isLast = i == turfs.length - 1;
+                    return _PopularRow(turf: turfs[i], showDivider: !isLast);
+                  }),
+                ),
+              );
+            },
+            loading: () => const Padding(
+              padding: EdgeInsets.symmetric(vertical: 32),
+              child: Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              ),
             ),
-            child: Column(
-              children: List.generate(_popular.length, (i) {
-                final isLast = i == _popular.length - 1;
-                return _PopularRow(turf: _popular[i], showDivider: !isLast);
-              }),
-            ),
+            error: (e, _) => _emptyState('Could not load turfs.'),
           ),
         ],
       ),
     );
   }
-}
 
-class _NearbyTurf {
-  final String id;
-  final String name;
-  final String location;
-  final int price;
-  final double rating;
-  final String image;
+  Widget _skeletonRow() {
+    return ListView.separated(
+      scrollDirection: Axis.horizontal,
+      padding: EdgeInsets.zero,
+      itemCount: 3,
+      separatorBuilder: (_, __) => const SizedBox(width: 16),
+      itemBuilder: (_, __) => ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: Container(width: 288, color: AppColors.surface),
+      ),
+    );
+  }
 
-  const _NearbyTurf({
-    required this.id,
-    required this.name,
-    required this.location,
-    required this.price,
-    required this.rating,
-    required this.image,
-  });
-}
-
-class _PopularTurf {
-  final String id;
-  final String name;
-  final String location;
-  final int price;
-  final double rating;
-  final String sport;
-  final String badge;
-  final String image;
-
-  const _PopularTurf({
-    required this.id,
-    required this.name,
-    required this.location,
-    required this.price,
-    required this.rating,
-    required this.sport,
-    required this.badge,
-    required this.image,
-  });
+  Widget _emptyState(String label) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 32),
+      child: Center(
+        child: Text(
+          label,
+          style: AppTypography.bodySm.copyWith(color: AppColors.textSecondary),
+        ),
+      ),
+    );
+  }
 }
 
 class _NearYouCard extends StatelessWidget {
   const _NearYouCard({required this.turf});
-  final _NearbyTurf turf;
+  final TurfSummary turf;
 
   @override
   Widget build(BuildContext context) {
+    final subtitle = turf.distance > 0
+        ? '${turf.location} • ${Formatters.distance(turf.distance * 1000)}'
+        : turf.location;
     return GestureDetector(
-      onTap: () => context.go(RouteNames.turfDetailPath(turf.id)),
+      onTap: () => context.push(RouteNames.turfDetailPath(turf.id)),
       child: SizedBox(
         width: 288,
         child: Column(
@@ -299,7 +269,7 @@ class _NearYouCard extends StatelessWidget {
                     height: 216,
                     width: 288,
                     child: Image.network(
-                      turf.image,
+                      turf.imageUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => Container(
                         color: AppColors.primaryTint,
@@ -334,10 +304,12 @@ class _NearYouCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        turf.location,
+                        subtitle,
                         style: AppTypography.bodySm.copyWith(
                           color: AppColors.textSecondary,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
@@ -346,7 +318,7 @@ class _NearYouCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '\$${turf.price}',
+                      Formatters.price(turf.pricePerHour),
                       style: AppTypography.h2Alt.copyWith(
                         color: AppColors.textPrimary,
                       ),
@@ -373,13 +345,15 @@ class _NearYouCard extends StatelessWidget {
 
 class _PopularRow extends StatelessWidget {
   const _PopularRow({required this.turf, required this.showDivider});
-  final _PopularTurf turf;
+  final TurfSummary turf;
   final bool showDivider;
 
   @override
   Widget build(BuildContext context) {
+    final sport =
+        turf.sports.isNotEmpty ? turf.sports.first.toUpperCase() : 'TURF';
     return GestureDetector(
-      onTap: () => context.go(RouteNames.turfDetailPath(turf.id)),
+      onTap: () => context.push(RouteNames.turfDetailPath(turf.id)),
       child: Container(
         decoration: BoxDecoration(
           border: showDivider
@@ -398,7 +372,7 @@ class _PopularRow extends StatelessWidget {
                     width: 96,
                     height: 96,
                     child: Image.network(
-                      turf.image,
+                      turf.imageUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => Container(
                         color: AppColors.primaryTint,
@@ -420,7 +394,7 @@ class _PopularRow extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 6, vertical: 2),
                       child: Text(
-                        turf.sport,
+                        sport,
                         style: AppTypography.labelSmCaps.copyWith(
                           color: AppColors.textPrimary,
                         ),
@@ -437,8 +411,8 @@ class _PopularRow extends StatelessWidget {
                 children: [
                   Text(
                     turf.name,
-                    style: AppTypography.h3
-                        .copyWith(color: AppColors.textPrimary),
+                    style:
+                        AppTypography.h3.copyWith(color: AppColors.textPrimary),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -447,6 +421,8 @@ class _PopularRow extends StatelessWidget {
                     turf.location,
                     style: AppTypography.bodySm
                         .copyWith(color: AppColors.textSecondary),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 8),
                   Row(
@@ -470,7 +446,7 @@ class _PopularRow extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 2),
                           child: Text(
-                            turf.badge,
+                            '${turf.reviewCount} reviews',
                             style: AppTypography.labelRating.copyWith(
                               color: AppColors.textSecondary,
                             ),
@@ -488,7 +464,7 @@ class _PopularRow extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  '\$${turf.price}',
+                  Formatters.price(turf.pricePerHour),
                   style: AppTypography.h2Alt
                       .copyWith(color: AppColors.textPrimary),
                 ),

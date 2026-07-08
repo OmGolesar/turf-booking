@@ -66,7 +66,8 @@ class _NavItem {
 }
 
 class _NavCell extends StatelessWidget {
-  const _NavCell({required this.item, required this.active, required this.onTap});
+  const _NavCell(
+      {required this.item, required this.active, required this.onTap});
 
   final _NavItem item;
   final bool active;

@@ -7,5 +7,6 @@ class GetProfileUseCase implements UseCase<UserProfile, NoParams> {
   final ProfileRepository repository;
   const GetProfileUseCase(this.repository);
   @override
-  Future<({UserProfile? data, Failure? failure})> call(NoParams params) => repository.getProfile();
+  Future<({UserProfile? data, Failure? failure})> call(NoParams params) =>
+      repository.getProfile();
 }

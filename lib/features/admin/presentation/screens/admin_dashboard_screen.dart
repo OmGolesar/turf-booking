@@ -76,11 +76,15 @@ class AdminDashboardScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               child: todayBookingsAsync.when(
                 data: (bookings) {
-                  final confirmed = bookings.where((b) => b.status == BookingStatus.confirmed).length;
-                  final revenue = bookings.fold<double>(0, (sum, b) => sum + b.turfCharge);
+                  final confirmed = bookings
+                      .where((b) => b.status == BookingStatus.confirmed)
+                      .length;
+                  final revenue =
+                      bookings.fold<double>(0, (sum, b) => sum + b.turfCharge);
                   return slotsAsync.when(
                     data: (slots) {
-                      final available = slots.where((s) => s.isAvailable).length;
+                      final available =
+                          slots.where((s) => s.isAvailable).length;
                       final booked = slots.where((s) => s.isBooked).length;
                       return _StatsRow(
                         confirmed: confirmed,
@@ -89,12 +93,16 @@ class AdminDashboardScreen extends ConsumerWidget {
                         booked: booked,
                       );
                     },
-                    loading: () => const _StatsRow(confirmed: 0, revenue: 0, available: 0, booked: 0),
-                    error: (_, __) => const _StatsRow(confirmed: 0, revenue: 0, available: 0, booked: 0),
+                    loading: () => const _StatsRow(
+                        confirmed: 0, revenue: 0, available: 0, booked: 0),
+                    error: (_, __) => const _StatsRow(
+                        confirmed: 0, revenue: 0, available: 0, booked: 0),
                   );
                 },
-                loading: () => const _StatsRow(confirmed: 0, revenue: 0, available: 0, booked: 0),
-                error: (_, __) => const _StatsRow(confirmed: 0, revenue: 0, available: 0, booked: 0),
+                loading: () => const _StatsRow(
+                    confirmed: 0, revenue: 0, available: 0, booked: 0),
+                error: (_, __) => const _StatsRow(
+                    confirmed: 0, revenue: 0, available: 0, booked: 0),
               ),
             ),
           ),
@@ -107,7 +115,8 @@ class AdminDashboardScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Quick Actions',
-                      style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
+                      style: textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w800)),
                   const SizedBox(height: 12),
                   Row(
                     children: [
@@ -152,20 +161,23 @@ class AdminDashboardScreen extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
               child: Text(
                 "Today's Bookings",
-                style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+                style: textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w800),
               ),
             ),
           ),
 
           todayBookingsAsync.when(
             loading: () => const SliverToBoxAdapter(
-              child: Center(child: Padding(
+              child: Center(
+                  child: Padding(
                 padding: EdgeInsets.all(32),
                 child: CircularProgressIndicator(color: AppColors.primary),
               )),
             ),
             error: (e, _) => SliverToBoxAdapter(
-              child: Center(child: Padding(
+              child: Center(
+                  child: Padding(
                 padding: const EdgeInsets.all(32),
                 child: Text('Error: $e'),
               )),
@@ -178,7 +190,8 @@ class AdminDashboardScreen extends ConsumerWidget {
               }
               return SliverList.builder(
                 itemCount: bookings.length,
-                itemBuilder: (context, i) => _AdminBookingTile(booking: bookings[i]),
+                itemBuilder: (context, i) =>
+                    _AdminBookingTile(booking: bookings[i]),
               );
             },
           ),
@@ -209,13 +222,25 @@ class _StatsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        _StatCard(label: "Today's\nBookings", value: '$confirmed', color: AppColors.primary),
+        _StatCard(
+            label: "Today's\nBookings",
+            value: '$confirmed',
+            color: AppColors.primary),
         const SizedBox(width: 8),
-        _StatCard(label: "Revenue\n(Today)", value: '₹${revenue.toStringAsFixed(0)}', color: const Color(0xFF2196F3)),
+        _StatCard(
+            label: "Revenue\n(Today)",
+            value: '₹${revenue.toStringAsFixed(0)}',
+            color: const Color(0xFF2196F3)),
         const SizedBox(width: 8),
-        _StatCard(label: 'Available\nSlots', value: '$available', color: const Color(0xFF4CAF50)),
+        _StatCard(
+            label: 'Available\nSlots',
+            value: '$available',
+            color: const Color(0xFF4CAF50)),
         const SizedBox(width: 8),
-        _StatCard(label: 'Booked\nSlots', value: '$booked', color: const Color(0xFFFF9800)),
+        _StatCard(
+            label: 'Booked\nSlots',
+            value: '$booked',
+            color: const Color(0xFFFF9800)),
       ],
     );
   }
@@ -226,7 +251,8 @@ class _StatCard extends StatelessWidget {
   final String value;
   final Color color;
 
-  const _StatCard({required this.label, required this.value, required this.color});
+  const _StatCard(
+      {required this.label, required this.value, required this.color});
 
   @override
   Widget build(BuildContext context) {

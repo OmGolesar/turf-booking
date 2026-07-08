@@ -164,13 +164,13 @@ class _BookingCard extends StatelessWidget {
                             ?.copyWith(fontWeight: FontWeight.w800)),
                     Text(booking['location'] as String,
                         style: textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurface.withValues(alpha: 0.5))),
+                            color:
+                                colorScheme.onSurface.withValues(alpha: 0.5))),
                   ],
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: isUpcoming
                       ? AppColors.primary.withValues(alpha: 0.12)
@@ -191,10 +191,12 @@ class _BookingCard extends StatelessWidget {
           const Divider(height: 20),
           Row(
             children: [
-              _InfoChip(icon: Icons.calendar_today_outlined,
+              _InfoChip(
+                  icon: Icons.calendar_today_outlined,
                   text: booking['date'] as String),
               const SizedBox(width: 16),
-              _InfoChip(icon: Icons.schedule_outlined,
+              _InfoChip(
+                  icon: Icons.schedule_outlined,
                   text: booking['slot'] as String),
             ],
           ),

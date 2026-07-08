@@ -4,9 +4,23 @@ import '../../../../core/errors/failures.dart';
 
 class BookingRepositoryImpl implements BookingRepository {
   @override
-  Future<({Booking? data, Failure? failure})> createBooking({required String turfId, required DateTime date, required String startTime, required String endTime}) async { throw UnimplementedError(); }
+  Future<({Booking? data, Failure? failure})> createBooking(
+      {required String turfId,
+      required DateTime date,
+      required String startTime,
+      required String endTime}) async {
+    throw UnimplementedError();
+  }
+
   @override
-  Future<({bool? data, Failure? failure})> cancelBooking(String bookingId) async { throw UnimplementedError(); }
+  Future<({bool? data, Failure? failure})> cancelBooking(
+      String bookingId) async {
+    throw UnimplementedError();
+  }
+
   @override
-  Future<({Booking? data, Failure? failure})> getBookingSummary(String bookingId) async { throw UnimplementedError(); }
+  Future<({Booking? data, Failure? failure})> getBookingSummary(
+      String bookingId) async {
+    throw UnimplementedError();
+  }
 }

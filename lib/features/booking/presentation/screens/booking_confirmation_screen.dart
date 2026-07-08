@@ -1,26 +1,77 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/turfx_widgets.dart';
+import '../providers/booking_provider.dart';
 
-/// Confirmation (Dark) — Figma spec.
-class BookingConfirmationScreen extends StatelessWidget {
+/// Confirmation (Dark) — Figma spec, live-wired.
+class BookingConfirmationScreen extends ConsumerWidget {
   const BookingConfirmationScreen({super.key});
 
-  static const _summary = [
-    _ConfRow('Venue', 'Urban Astro Arena'),
-    _ConfRow('Date & Time', 'Oct 24 • 18:00 - 20:00'),
-    _ConfRow('Slots', '1 Full Pitch (5v5)'),
-    _ConfRow('Total Paid', '\$120.00'),
-    _ConfRow('Booking ID', 'TX-8924B', upper: true),
-  ];
+  String _fmt12h(String hhmm) {
+    final parts = hhmm.split(':');
+    if (parts.length < 2) return hhmm;
+    final h = int.tryParse(parts[0]) ?? 0;
+    final m = parts[1];
+    final period = h >= 12 ? 'PM' : 'AM';
+    final h12 = h > 12 ? h - 12 : (h == 0 ? 12 : h);
+    return '$h12:$m $period';
+  }
+
+  String _prettyDate(String iso) {
+    final parts = iso.split('-');
+    if (parts.length != 3) return iso;
+    try {
+      final mo = int.parse(parts[1]);
+      final d = int.parse(parts[2]);
+      const months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
+      return '${months[mo - 1]} $d';
+    } catch (_) {
+      return iso;
+    }
+  }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final booking = ref.watch(bookingNotifierProvider).latestBooking;
+
+    final rows = booking == null
+        ? const <_ConfRow>[
+            _ConfRow('Status', 'No booking found'),
+          ]
+        : [
+            _ConfRow('Venue', booking.turfName),
+            _ConfRow(
+              'Date & Time',
+              '${_prettyDate(booking.date)} • ${_fmt12h(booking.startTime)} - ${_fmt12h(booking.endTime)}',
+            ),
+            _ConfRow(
+              'Slots',
+              '${booking.slotCount} ${booking.slotCount == 1 ? "Slot" : "Slots"} (${booking.sport})',
+            ),
+            _ConfRow('Total Paid', Formatters.price(booking.totalAmount)),
+            _ConfRow('Booking ID', booking.id, upper: true),
+          ];
+
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: SafeArea(
@@ -94,9 +145,9 @@ class BookingConfirmationScreen extends StatelessWidget {
                   border: Border.all(color: AppColors.border, width: 1),
                 ),
                 child: Column(
-                  children: List.generate(_summary.length, (i) {
-                    final isLast = i == _summary.length - 1;
-                    return _summaryRow(_summary[i], showDivider: !isLast);
+                  children: List.generate(rows.length, (i) {
+                    final isLast = i == rows.length - 1;
+                    return _summaryRow(rows[i], showDivider: !isLast);
                   }),
                 ),
               ),
@@ -176,11 +227,16 @@ class BookingConfirmationScreen extends StatelessWidget {
               style: AppTypography.bodySm.copyWith(
                 color: AppColors.textSecondary,
               )),
-          Text(r.value,
+          Flexible(
+            child: Text(
+              r.value,
+              textAlign: TextAlign.end,
               style: (r.upper
                       ? AppTypography.bodyMdStrong.copyWith(letterSpacing: 0.8)
                       : AppTypography.bodyMdEmphasized)
-                  .copyWith(color: AppColors.textPrimary)),
+                  .copyWith(color: AppColors.textPrimary),
+            ),
+          ),
         ],
       ),
     );

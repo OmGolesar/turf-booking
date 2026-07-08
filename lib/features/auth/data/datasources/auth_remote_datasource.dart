@@ -7,7 +7,11 @@ import '../models/user_model.dart';
 /// Remote data source for authentication — backed by Firebase Auth.
 abstract class AuthRemoteDataSource {
   Future<UserModel> login({required String email, required String password});
-  Future<UserModel> signup({required String name, required String email, required String password, String? phone});
+  Future<UserModel> signup(
+      {required String name,
+      required String email,
+      required String password,
+      String? phone});
   Future<void> logout();
   Stream<UserModel?> get authStateChanges;
   Future<UserModel?> getCurrentUser();

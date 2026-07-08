@@ -29,7 +29,8 @@ class AdminSlotManagerScreen extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               children: [
-                const Icon(Icons.calendar_today, size: 18, color: AppColors.primary),
+                const Icon(Icons.calendar_today,
+                    size: 18, color: AppColors.primary),
                 const SizedBox(width: 8),
                 Text(selectedDate,
                     style: textTheme.titleSmall
@@ -48,7 +49,8 @@ class AdminSlotManagerScreen extends ConsumerWidget {
                     if (picked != null) {
                       final dateStr =
                           '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
-                      ref.read(adminSelectedDateProvider.notifier).state = dateStr;
+                      ref.read(adminSelectedDateProvider.notifier).state =
+                          dateStr;
                     }
                   },
                 ),
@@ -61,11 +63,16 @@ class AdminSlotManagerScreen extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               children: [
-                _LegendItem(color: AppColors.primary.withValues(alpha: 0.15), label: 'Available'),
+                _LegendItem(
+                    color: AppColors.primary.withValues(alpha: 0.15),
+                    label: 'Available'),
                 const SizedBox(width: 16),
-                _LegendItem(color: Colors.grey.withValues(alpha: 0.3), label: 'Booked'),
+                _LegendItem(
+                    color: Colors.grey.withValues(alpha: 0.3), label: 'Booked'),
                 const SizedBox(width: 16),
-                _LegendItem(color: Colors.orange.withValues(alpha: 0.2), label: 'Blocked'),
+                _LegendItem(
+                    color: Colors.orange.withValues(alpha: 0.2),
+                    label: 'Blocked'),
               ],
             ),
           ),
@@ -153,13 +160,16 @@ class _SlotTile extends StatelessWidget {
             ),
             if (isBooked)
               Text('Booked',
-                  style: TextStyle(fontSize: 9, color: textColor.withValues(alpha: 0.7)))
+                  style: TextStyle(
+                      fontSize: 9, color: textColor.withValues(alpha: 0.7)))
             else if (isBlocked)
               Text('Blocked',
-                  style: TextStyle(fontSize: 9, color: textColor.withValues(alpha: 0.8)))
+                  style: TextStyle(
+                      fontSize: 9, color: textColor.withValues(alpha: 0.8)))
             else
               Text('Free',
-                  style: TextStyle(fontSize: 9, color: textColor.withValues(alpha: 0.7))),
+                  style: TextStyle(
+                      fontSize: 9, color: textColor.withValues(alpha: 0.7))),
           ],
         ),
       ),
@@ -185,7 +195,8 @@ class _SlotTile extends StatelessWidget {
                 child: const Text('Cancel')),
             TextButton(
                 onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Block', style: TextStyle(color: Colors.orange))),
+                child: const Text('Block',
+                    style: TextStyle(color: Colors.orange))),
           ],
         ),
       );

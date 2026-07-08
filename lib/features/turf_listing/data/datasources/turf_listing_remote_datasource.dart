@@ -19,29 +19,28 @@ class TurfListingRemoteDataSourceImpl implements TurfListingRemoteDataSource {
     String? sport,
     String sortBy = 'rating',
   }) async {
-    Query<Map<String, dynamic>> query = _db
-        .collection('turfs')
-        .where('isActive', isEqualTo: true);
+    // Firestore composite indexes are avoided by sorting client-side.
+    Query<Map<String, dynamic>> query =
+        _db.collection('turfs').where('isActive', isEqualTo: true);
 
-    // Sport filter
     if (sport != null && sport.isNotEmpty && sport != 'All') {
       query = query.where('sports', arrayContains: sport);
     }
 
-    // Sort
+    final snap = await query.limit(50).get();
+    final turfs = snap.docs.map(TurfSummaryModel.fromFirestore).toList();
+
     switch (sortBy) {
       case 'priceAsc':
-        query = query.orderBy('pricePerHour', descending: false);
+        turfs.sort((a, b) => a.pricePerHour.compareTo(b.pricePerHour));
         break;
       case 'priceDesc':
-        query = query.orderBy('pricePerHour', descending: true);
+        turfs.sort((a, b) => b.pricePerHour.compareTo(a.pricePerHour));
         break;
       case 'rating':
       default:
-        query = query.orderBy('rating', descending: true);
+        turfs.sort((a, b) => b.rating.compareTo(a.rating));
     }
-
-    final snap = await query.limit(50).get();
-    return snap.docs.map(TurfSummaryModel.fromFirestore).toList();
+    return turfs;
   }
 }

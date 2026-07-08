@@ -25,7 +25,8 @@ class AppLogger {
     }
   }
 
-  static void error(String message, {String? tag, Object? error, StackTrace? stackTrace}) {
+  static void error(String message,
+      {String? tag, Object? error, StackTrace? stackTrace}) {
     if (kDebugMode) {
       debugPrint('❌ [${tag ?? 'ERROR'}] $message');
       if (error != null) debugPrint('  Error: $error');
@@ -33,9 +34,11 @@ class AppLogger {
     }
   }
 
-  static void network(String method, String url, {int? statusCode, String? body}) {
+  static void network(String method, String url,
+      {int? statusCode, String? body}) {
     if (kDebugMode) {
-      debugPrint('🌐 [$method] $url ${statusCode != null ? '→ $statusCode' : ''}');
+      debugPrint(
+          '🌐 [$method] $url ${statusCode != null ? '→ $statusCode' : ''}');
       if (body != null && body.length < 500) debugPrint('  Body: $body');
     }
   }

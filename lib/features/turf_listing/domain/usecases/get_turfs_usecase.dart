@@ -11,15 +11,25 @@ class GetTurfsParams {
   final TurfFilter? filter;
   final TurfSortBy sortBy;
   final String? searchQuery;
-  const GetTurfsParams({this.page = 1, this.filter, this.sortBy = TurfSortBy.nearest, this.searchQuery});
+  const GetTurfsParams(
+      {this.page = 1,
+      this.filter,
+      this.sortBy = TurfSortBy.nearest,
+      this.searchQuery});
 }
 
-class GetTurfsUseCase implements UseCase<Pagination<TurfSummary>, GetTurfsParams> {
+class GetTurfsUseCase
+    implements UseCase<Pagination<TurfSummary>, GetTurfsParams> {
   final TurfListingRepository repository;
   const GetTurfsUseCase(this.repository);
 
   @override
-  Future<({Pagination<TurfSummary>? data, Failure? failure})> call(GetTurfsParams params) {
-    return repository.getTurfs(page: params.page, filter: params.filter, sortBy: params.sortBy, searchQuery: params.searchQuery);
+  Future<({Pagination<TurfSummary>? data, Failure? failure})> call(
+      GetTurfsParams params) {
+    return repository.getTurfs(
+        page: params.page,
+        filter: params.filter,
+        sortBy: params.sortBy,
+        searchQuery: params.searchQuery);
   }
 }

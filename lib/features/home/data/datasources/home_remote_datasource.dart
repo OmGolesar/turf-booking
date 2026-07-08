@@ -28,13 +28,15 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
 
   @override
   Future<List<TurfSummary>> getPopularTurfs({String city = 'Nashik'}) async {
+    // Client-side sort avoids requiring a Firestore composite index.
     final snap = await _db
         .collection('turfs')
         .where('isActive', isEqualTo: true)
         .where('city', isEqualTo: city)
-        .orderBy('rating', descending: true)
-        .limit(6)
+        .limit(30)
         .get();
-    return snap.docs.map(TurfSummaryModel.fromFirestore).toList();
+    final all = snap.docs.map(TurfSummaryModel.fromFirestore).toList()
+      ..sort((a, b) => b.rating.compareTo(a.rating));
+    return all.take(6).toList();
   }
 }

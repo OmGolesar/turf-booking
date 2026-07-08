@@ -10,10 +10,13 @@ class UpdateProfileParams {
   const UpdateProfileParams({this.name, this.phone, this.avatarUrl});
 }
 
-class UpdateProfileUseCase implements UseCase<UserProfile, UpdateProfileParams> {
+class UpdateProfileUseCase
+    implements UseCase<UserProfile, UpdateProfileParams> {
   final ProfileRepository repository;
   const UpdateProfileUseCase(this.repository);
   @override
-  Future<({UserProfile? data, Failure? failure})> call(UpdateProfileParams params) =>
-    repository.updateProfile(name: params.name, phone: params.phone, avatarUrl: params.avatarUrl);
+  Future<({UserProfile? data, Failure? failure})> call(
+          UpdateProfileParams params) =>
+      repository.updateProfile(
+          name: params.name, phone: params.phone, avatarUrl: params.avatarUrl);
 }

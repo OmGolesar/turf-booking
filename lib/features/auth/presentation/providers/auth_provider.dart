@@ -59,7 +59,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final user = await _repo.login(email: email, password: password);
       state = AuthState(user: user);
     } catch (e) {
-      state = AuthState(errorMessage: e.toString().replaceFirst('Exception: ', ''));
+      state =
+          AuthState(errorMessage: e.toString().replaceFirst('Exception: ', ''));
     }
   }
 
@@ -71,10 +72,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final user = await _repo.signup(name: name, email: email, password: password, phone: phone);
+      final user = await _repo.signup(
+          name: name, email: email, password: password, phone: phone);
       state = AuthState(user: user);
     } catch (e) {
-      state = AuthState(errorMessage: e.toString().replaceFirst('Exception: ', ''));
+      state =
+          AuthState(errorMessage: e.toString().replaceFirst('Exception: ', ''));
     }
   }
 

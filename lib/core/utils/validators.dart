@@ -86,7 +86,8 @@ class Validators {
   }
 
   /// Validates minimum length.
-  static String? minLength(String? value, int min, [String fieldName = 'This field']) {
+  static String? minLength(String? value, int min,
+      [String fieldName = 'This field']) {
     if (value == null || value.length < min) {
       return '$fieldName must be at least $min characters';
     }

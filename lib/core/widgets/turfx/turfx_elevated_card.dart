@@ -44,9 +44,7 @@ class TurfElevatedCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(radius),
         ),
         clipBehavior: Clip.antiAlias,
-        child: onTap == null
-            ? content
-            : InkWell(onTap: onTap, child: content),
+        child: onTap == null ? content : InkWell(onTap: onTap, child: content),
       ),
     );
   }

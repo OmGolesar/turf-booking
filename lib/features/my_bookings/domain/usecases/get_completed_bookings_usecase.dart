@@ -7,5 +7,6 @@ class GetCompletedBookingsUseCase implements UseCase<List<Booking>, NoParams> {
   final MyBookingsRepository repository;
   const GetCompletedBookingsUseCase(this.repository);
   @override
-  Future<({List<Booking>? data, Failure? failure})> call(NoParams params) => repository.getCompletedBookings();
+  Future<({List<Booking>? data, Failure? failure})> call(NoParams params) =>
+      repository.getCompletedBookings();
 }

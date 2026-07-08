@@ -4,7 +4,14 @@ import '../../../../core/errors/failures.dart';
 
 class MyBookingsRepositoryImpl implements MyBookingsRepository {
   @override
-  Future<({List<Booking>? data, Failure? failure})> getUpcomingBookings() async { throw UnimplementedError(); }
+  Future<({List<Booking>? data, Failure? failure})>
+      getUpcomingBookings() async {
+    throw UnimplementedError();
+  }
+
   @override
-  Future<({List<Booking>? data, Failure? failure})> getCompletedBookings() async { throw UnimplementedError(); }
+  Future<({List<Booking>? data, Failure? failure})>
+      getCompletedBookings() async {
+    throw UnimplementedError();
+  }
 }

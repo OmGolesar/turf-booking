@@ -9,10 +9,12 @@ class GetAvailableSlotsParams {
   const GetAvailableSlotsParams({required this.turfId, required this.date});
 }
 
-class GetAvailableSlotsUseCase implements UseCase<List<TimeSlot>, GetAvailableSlotsParams> {
+class GetAvailableSlotsUseCase
+    implements UseCase<List<TimeSlot>, GetAvailableSlotsParams> {
   final TurfDetailRepository repository;
   const GetAvailableSlotsUseCase(this.repository);
   @override
-  Future<({List<TimeSlot>? data, Failure? failure})> call(GetAvailableSlotsParams params) =>
+  Future<({List<TimeSlot>? data, Failure? failure})> call(
+          GetAvailableSlotsParams params) =>
       repository.getAvailableSlots(params.turfId, date: params.date);
 }

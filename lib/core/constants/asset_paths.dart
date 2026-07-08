@@ -20,8 +20,10 @@ class AssetPaths {
   static const String onboarding3 = '$_images/onboarding/onboarding_3.png';
 
   // Placeholders
-  static const String turfPlaceholder = '$_images/placeholders/turf_placeholder.png';
-  static const String avatarPlaceholder = '$_images/placeholders/avatar_placeholder.png';
+  static const String turfPlaceholder =
+      '$_images/placeholders/turf_placeholder.png';
+  static const String avatarPlaceholder =
+      '$_images/placeholders/avatar_placeholder.png';
 
   // ── Icons ─────────────────────────────────────────────────
   static const String cricket = '$_icons/sports/cricket.png';

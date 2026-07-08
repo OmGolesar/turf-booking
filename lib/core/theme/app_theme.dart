@@ -116,7 +116,8 @@ class AppTheme {
       scrolledUnderElevation: 0,
       centerTitle: false,
       backgroundColor: isLight ? AppColors.surfaceLight : AppColors.bg,
-      foregroundColor: isLight ? AppColors.textPrimaryLight : AppColors.textPrimary,
+      foregroundColor:
+          isLight ? AppColors.textPrimaryLight : AppColors.textPrimary,
       titleTextStyle: AppTypography.h1.copyWith(
         color: isLight ? AppColors.textPrimaryLight : AppColors.textPrimary,
       ),
@@ -215,9 +216,8 @@ class AppTheme {
     return BottomNavigationBarThemeData(
       backgroundColor: isLight ? AppColors.surfaceLight : AppColors.divider,
       selectedItemColor: AppColors.onPrimary,
-      unselectedItemColor: isLight
-          ? AppColors.textTertiaryLight
-          : AppColors.textSecondaryAlt,
+      unselectedItemColor:
+          isLight ? AppColors.textTertiaryLight : AppColors.textSecondaryAlt,
       type: BottomNavigationBarType.fixed,
       elevation: 0,
       selectedLabelStyle: AppTypography.labelNav,

@@ -7,5 +7,6 @@ class GetBookingSummaryUseCase implements UseCase<Booking, String> {
   final BookingRepository repository;
   const GetBookingSummaryUseCase(this.repository);
   @override
-  Future<({Booking? data, Failure? failure})> call(String params) => repository.getBookingSummary(params);
+  Future<({Booking? data, Failure? failure})> call(String params) =>
+      repository.getBookingSummary(params);
 }

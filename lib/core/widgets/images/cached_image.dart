@@ -49,7 +49,8 @@ class CachedImage extends StatelessWidget {
             width: width,
             height: height,
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            child:
+                const Center(child: CircularProgressIndicator(strokeWidth: 2)),
           );
         },
       ),

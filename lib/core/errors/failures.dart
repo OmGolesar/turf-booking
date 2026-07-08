@@ -24,7 +24,8 @@ class ServerFailure extends Failure {
 
 /// Network connectivity failure.
 class NetworkFailure extends Failure {
-  const NetworkFailure({super.message = 'Please check your internet connection'});
+  const NetworkFailure(
+      {super.message = 'Please check your internet connection'});
 }
 
 /// Local cache/storage failure.

@@ -54,7 +54,8 @@ abstract class BookingRemoteDataSource {
   Future<Booking> createBooking(BookingRequest request);
 
   /// Cancels a booking and restores all slots to "available".
-  Future<void> cancelBooking(String bookingId, String turfId, List<String> slotIds);
+  Future<void> cancelBooking(
+      String bookingId, String turfId, List<String> slotIds);
 
   Future<List<Booking>> getUpcomingBookings(String userId);
   Future<List<Booking>> getCompletedBookings(String userId);
@@ -75,7 +76,8 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
 
     // Slot document references
     final slotRefs = req.slotIds
-        .map((id) => _db.collection('turfs').doc(req.turfId).collection('slots').doc(id))
+        .map((id) =>
+            _db.collection('turfs').doc(req.turfId).collection('slots').doc(id))
         .toList();
 
     // Calculate price breakdown
@@ -95,7 +97,8 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
         final status = snap.data()!['status'] as String?;
         if (status != 'available') {
           final start = snap.data()!['startTime'] as String? ?? '';
-          throw Exception('Slot $start is no longer available. Please choose a different slot.');
+          throw Exception(
+              'Slot $start is no longer available. Please choose a different slot.');
         }
       }
 
@@ -120,7 +123,8 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
         gst: gst,
         totalAmount: total,
         paymentMethod: req.paymentMethod,
-        paymentStatus: req.bookingSource == BookingSource.app ? 'paid' : 'pending',
+        paymentStatus:
+            req.bookingSource == BookingSource.app ? 'paid' : 'pending',
         bookingSource: req.bookingSource,
         status: BookingStatus.confirmed,
         adminNote: req.adminNote,
@@ -147,7 +151,8 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
     List<String> slotIds,
   ) async {
     final slotRefs = slotIds
-        .map((id) => _db.collection('turfs').doc(turfId).collection('slots').doc(id))
+        .map((id) =>
+            _db.collection('turfs').doc(turfId).collection('slots').doc(id))
         .toList();
 
     await _db.runTransaction((tx) async {
@@ -166,7 +171,8 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
   @override
   Future<List<Booking>> getUpcomingBookings(String userId) async {
     final today = DateTime.now();
-    final todayStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    final todayStr =
+        '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
     final snap = await _db
         .collection('bookings')
         .where('userId', isEqualTo: userId)
@@ -181,7 +187,8 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
   @override
   Future<List<Booking>> getCompletedBookings(String userId) async {
     final today = DateTime.now();
-    final todayStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    final todayStr =
+        '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
     final snap = await _db
         .collection('bookings')
         .where('userId', isEqualTo: userId)

@@ -34,8 +34,11 @@ class TurfDetailRemoteDataSourceImpl implements TurfDetailRemoteDataSource {
         .doc(turfId)
         .collection('slots')
         .where('date', isEqualTo: date)
-        .orderBy('startTime')
         .snapshots()
-        .map((snap) => snap.docs.map(TimeSlot.fromFirestore).toList());
+        .map((snap) {
+      final slots = snap.docs.map(TimeSlot.fromFirestore).toList()
+        ..sort((a, b) => a.startTime.compareTo(b.startTime));
+      return slots;
+    });
   }
 }

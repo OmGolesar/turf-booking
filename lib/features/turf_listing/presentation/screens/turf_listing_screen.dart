@@ -1,70 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/turfx_widgets.dart';
+import '../../../home/domain/entities/turf_summary.dart';
+import '../providers/turf_listing_provider.dart';
 
-/// Search Results (Dark) — Figma spec.
-class TurfListingScreen extends StatefulWidget {
+/// Search Results (Dark) — Figma spec, live-wired to Firestore.
+class TurfListingScreen extends ConsumerStatefulWidget {
   final String? initialCategory;
   const TurfListingScreen({super.key, this.initialCategory});
 
   @override
-  State<TurfListingScreen> createState() => _TurfListingScreenState();
+  ConsumerState<TurfListingScreen> createState() => _TurfListingScreenState();
 }
 
-class _TurfListingScreenState extends State<TurfListingScreen> {
+class _TurfListingScreenState extends ConsumerState<TurfListingScreen> {
   String _sport = 'Football';
-
-  static const _turfs = [
-    _SearchTurf(
-      id: '1',
-      name: 'Central Arena',
-      location: 'Downtown District',
-      price: 45,
-      rating: 4.8,
-      formats: ['5v5', '7v7'],
-      nextSlot: '18:00',
-      image:
-          'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80',
-    ),
-    _SearchTurf(
-      id: '2',
-      name: 'Nexus Sports Hub',
-      location: 'Westside Complex',
-      price: 55,
-      rating: 4.9,
-      formats: ['11v11'],
-      nextSlot: '19:30',
-      image:
-          'https://images.unsplash.com/photo-1459865264687-595d652de67e?auto=format&fit=crop&w=1200&q=80',
-    ),
-    _SearchTurf(
-      id: '3',
-      name: 'Urban Kick',
-      location: 'Industrial Park',
-      price: 40,
-      rating: 4.6,
-      formats: ['5v5'],
-      nextSlot: '17:00',
-      image:
-          'https://images.unsplash.com/photo-1553778263-73a83bab9b0c?auto=format&fit=crop&w=1200&q=80',
-    ),
-    _SearchTurf(
-      id: '4',
-      name: 'The Green Pitch',
-      location: 'North Suburbs',
-      price: 50,
-      rating: 4.7,
-      formats: ['7v7', '9v9'],
-      nextSlot: '20:00',
-      image:
-          'https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80',
-    ),
-  ];
 
   @override
   void initState() {
@@ -72,10 +29,14 @@ class _TurfListingScreenState extends State<TurfListingScreen> {
     if (widget.initialCategory != null && widget.initialCategory!.isNotEmpty) {
       _sport = widget.initialCategory!;
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(selectedSportFilterProvider.notifier).state = _sport;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final listing = ref.watch(turfListingProvider);
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: CustomScrollView(
@@ -93,7 +54,9 @@ class _TurfListingScreenState extends State<TurfListingScreen> {
             leading: Padding(
               padding: const EdgeInsets.only(left: 20),
               child: GestureDetector(
-                onTap: () => context.pop(),
+                onTap: () => context.canPop()
+                    ? context.pop()
+                    : context.go(RouteNames.home),
                 child: const Icon(Icons.arrow_back_rounded,
                     size: 16, color: AppColors.textSecondary),
               ),
@@ -115,7 +78,8 @@ class _TurfListingScreenState extends State<TurfListingScreen> {
               children: [
                 Text(
                   '$_sport Turfs',
-                  style: AppTypography.h1.copyWith(color: AppColors.textPrimary),
+                  style:
+                      AppTypography.h1.copyWith(color: AppColors.textPrimary),
                 ),
                 const SizedBox(height: 16),
                 SizedBox(
@@ -153,10 +117,53 @@ class _TurfListingScreenState extends State<TurfListingScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                for (final t in _turfs) ...[
-                  _SearchResultCard(turf: t),
-                  const SizedBox(height: 24),
-                ],
+                ...listing.when(
+                  data: (turfs) {
+                    if (turfs.isEmpty) {
+                      return [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 60),
+                          child: Center(
+                            child: Text(
+                              'No $_sport turfs found.',
+                              style: AppTypography.bodyMd.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ];
+                    }
+                    return [
+                      for (final t in turfs) ...[
+                        _SearchResultCard(turf: t),
+                        const SizedBox(height: 24),
+                      ],
+                    ];
+                  },
+                  loading: () => [
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 60),
+                      child: Center(
+                        child:
+                            CircularProgressIndicator(color: AppColors.primary),
+                      ),
+                    ),
+                  ],
+                  error: (e, _) => [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 60),
+                      child: Center(
+                        child: Text(
+                          'Could not load turfs.',
+                          style: AppTypography.bodyMd.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -192,6 +199,7 @@ class _TurfListingScreenState extends State<TurfListingScreen> {
                     : null,
                 onTap: () {
                   setState(() => _sport = s);
+                  ref.read(selectedSportFilterProvider.notifier).state = s;
                   Navigator.pop(context);
                 },
               ),
@@ -202,31 +210,9 @@ class _TurfListingScreenState extends State<TurfListingScreen> {
   }
 }
 
-class _SearchTurf {
-  final String id;
-  final String name;
-  final String location;
-  final int price;
-  final double rating;
-  final List<String> formats;
-  final String nextSlot;
-  final String image;
-
-  const _SearchTurf({
-    required this.id,
-    required this.name,
-    required this.location,
-    required this.price,
-    required this.rating,
-    required this.formats,
-    required this.nextSlot,
-    required this.image,
-  });
-}
-
 class _SearchResultCard extends StatelessWidget {
   const _SearchResultCard({required this.turf});
-  final _SearchTurf turf;
+  final TurfSummary turf;
 
   @override
   Widget build(BuildContext context) {
@@ -238,12 +224,13 @@ class _SearchResultCard extends StatelessWidget {
           Stack(
             children: [
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.md)),
+                borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(AppRadius.md)),
                 child: SizedBox(
                   height: 200,
                   width: double.infinity,
                   child: Image.network(
-                    turf.image,
+                    turf.imageUrl,
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => Container(
                       color: AppColors.primaryTint,
@@ -271,12 +258,14 @@ class _SearchResultCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         turf.name,
-                        style: AppTypography.h2.copyWith(color: AppColors.textPrimary),
+                        style: AppTypography.h2
+                            .copyWith(color: AppColors.textPrimary),
                       ),
                     ),
                     Text(
-                      '\$${turf.price}',
-                      style: AppTypography.h2.copyWith(color: AppColors.accentGreen),
+                      Formatters.price(turf.pricePerHour),
+                      style: AppTypography.h2
+                          .copyWith(color: AppColors.accentGreen),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 2, left: 2),
@@ -295,10 +284,14 @@ class _SearchResultCard extends StatelessWidget {
                     const Icon(Icons.location_on_outlined,
                         size: 13, color: AppColors.textSecondary),
                     const SizedBox(width: 4),
-                    Text(
-                      turf.location,
-                      style: AppTypography.bodyXs
-                          .copyWith(color: AppColors.textSecondary),
+                    Expanded(
+                      child: Text(
+                        turf.location,
+                        style: AppTypography.bodyXs
+                            .copyWith(color: AppColors.textSecondary),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
@@ -307,15 +300,16 @@ class _SearchResultCard extends StatelessWidget {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    for (final f in turf.formats) TurfFormatPill(f),
-                    TurfNextSlotPill(turf.nextSlot),
+                    for (final s in turf.sports.take(2)) TurfFormatPill(s),
+                    if (turf.reviewCount > 0)
+                      TurfNextSlotPill('${turf.reviewCount}★'),
                   ],
                 ),
                 const SizedBox(height: 16),
                 TurfPrimaryButton(
                   label: 'BOOK',
                   onPressed: () =>
-                      context.go(RouteNames.turfDetailPath(turf.id)),
+                      context.push(RouteNames.turfDetailPath(turf.id)),
                 ),
               ],
             ),
