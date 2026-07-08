@@ -8,13 +8,21 @@ class TurfFilter {
   final List<String>? amenities;
 
   const TurfFilter({
-    this.categoryId, this.minPrice, this.maxPrice,
-    this.minRating, this.maxDistance, this.amenities,
+    this.categoryId,
+    this.minPrice,
+    this.maxPrice,
+    this.minRating,
+    this.maxDistance,
+    this.amenities,
   });
 
   TurfFilter copyWith({
-    String? categoryId, double? minPrice, double? maxPrice,
-    double? minRating, double? maxDistance, List<String>? amenities,
+    String? categoryId,
+    double? minPrice,
+    double? maxPrice,
+    double? minRating,
+    double? maxDistance,
+    List<String>? amenities,
   }) {
     return TurfFilter(
       categoryId: categoryId ?? this.categoryId,
@@ -33,7 +41,8 @@ class TurfFilter {
     if (maxPrice != null) params['max_price'] = maxPrice;
     if (minRating != null) params['min_rating'] = minRating;
     if (maxDistance != null) params['max_distance'] = maxDistance;
-    if (amenities != null && amenities!.isNotEmpty) params['amenities'] = amenities!.join(',');
+    if (amenities != null && amenities!.isNotEmpty)
+      params['amenities'] = amenities!.join(',');
     return params;
   }
 }

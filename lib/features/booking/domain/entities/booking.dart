@@ -64,7 +64,8 @@ class Booking {
   int get slotCount => slotIds.length;
 
   /// Display label for status.
-  String get statusLabel => status.name[0].toUpperCase() + status.name.substring(1);
+  String get statusLabel =>
+      status.name[0].toUpperCase() + status.name.substring(1);
 
   factory Booking.fromFirestore(DocumentSnapshot doc) {
     final d = doc.data() as Map<String, dynamic>;

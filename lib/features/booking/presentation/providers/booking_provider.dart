@@ -6,7 +6,8 @@ import '../../domain/entities/booking.dart';
 
 // ── Dependency Providers ───────────────────────────────────────────────────────
 
-final bookingRemoteDataSourceProvider = Provider<BookingRemoteDataSource>((ref) {
+final bookingRemoteDataSourceProvider =
+    Provider<BookingRemoteDataSource>((ref) {
   return BookingRemoteDataSourceImpl();
 });
 
@@ -22,6 +23,7 @@ class BookingState {
   final Set<String> selectedSlotIds;
   final String? selectedDate;
   final String? selectedSport;
+  final String? turfId;
 
   const BookingState({
     this.latestBooking,
@@ -31,6 +33,7 @@ class BookingState {
     this.selectedSlotIds = const {},
     this.selectedDate,
     this.selectedSport,
+    this.turfId,
   });
 
   BookingState copyWith({
@@ -41,15 +44,18 @@ class BookingState {
     Set<String>? selectedSlotIds,
     String? selectedDate,
     String? selectedSport,
+    String? turfId,
   }) {
     return BookingState(
       latestBooking: latestBooking ?? this.latestBooking,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage,
-      selectedPaymentMethod: selectedPaymentMethod ?? this.selectedPaymentMethod,
+      selectedPaymentMethod:
+          selectedPaymentMethod ?? this.selectedPaymentMethod,
       selectedSlotIds: selectedSlotIds ?? this.selectedSlotIds,
       selectedDate: selectedDate ?? this.selectedDate,
       selectedSport: selectedSport ?? this.selectedSport,
+      turfId: turfId ?? this.turfId,
     );
   }
 }
@@ -74,6 +80,7 @@ class BookingNotifier extends StateNotifier<BookingState> {
 
   void setDate(String date) => state = state.copyWith(selectedDate: date);
   void setSport(String sport) => state = state.copyWith(selectedSport: sport);
+  void setTurf(String turfId) => state = state.copyWith(turfId: turfId);
   void setPaymentMethod(String method) =>
       state = state.copyWith(selectedPaymentMethod: method);
 
@@ -130,7 +137,8 @@ class BookingNotifier extends StateNotifier<BookingState> {
   Future<void> cancelBooking(Booking booking) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      await _dataSource.cancelBooking(booking.id, booking.turfId, booking.slotIds);
+      await _dataSource.cancelBooking(
+          booking.id, booking.turfId, booking.slotIds);
       state = const BookingState();
     } catch (e) {
       state = state.copyWith(
@@ -150,14 +158,20 @@ final bookingNotifierProvider =
 
 // ── My Bookings Providers ─────────────────────────────────────────────────────
 
-final upcomingBookingsProvider = FutureProvider.autoDispose<List<Booking>>((ref) async {
+final upcomingBookingsProvider =
+    FutureProvider.autoDispose<List<Booking>>((ref) async {
   final user = ref.watch(authNotifierProvider).user;
   if (user == null) return [];
-  return ref.watch(bookingRemoteDataSourceProvider).getUpcomingBookings(user.id);
+  return ref
+      .watch(bookingRemoteDataSourceProvider)
+      .getUpcomingBookings(user.id);
 });
 
-final completedBookingsProvider = FutureProvider.autoDispose<List<Booking>>((ref) async {
+final completedBookingsProvider =
+    FutureProvider.autoDispose<List<Booking>>((ref) async {
   final user = ref.watch(authNotifierProvider).user;
   if (user == null) return [];
-  return ref.watch(bookingRemoteDataSourceProvider).getCompletedBookings(user.id);
+  return ref
+      .watch(bookingRemoteDataSourceProvider)
+      .getCompletedBookings(user.id);
 });

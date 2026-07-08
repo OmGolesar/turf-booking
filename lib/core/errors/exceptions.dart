@@ -12,7 +12,8 @@ class ServerException implements Exception {
   const ServerException({required this.message, this.statusCode});
 
   @override
-  String toString() => 'ServerException(message: $message, statusCode: $statusCode)';
+  String toString() =>
+      'ServerException(message: $message, statusCode: $statusCode)';
 }
 
 /// Thrown when there is no internet connection.

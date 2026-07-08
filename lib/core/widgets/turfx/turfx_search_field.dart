@@ -37,7 +37,8 @@ class TurfSearchField extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
-            const Icon(Icons.search_rounded, size: 18, color: AppColors.textPrimary),
+            const Icon(Icons.search_rounded,
+                size: 18, color: AppColors.textPrimary),
             const SizedBox(width: 12),
             Expanded(
               child: TextField(
@@ -45,7 +46,8 @@ class TurfSearchField extends StatelessWidget {
                 onChanged: onChanged,
                 onSubmitted: onSubmitted,
                 autofocus: autofocus,
-                style: AppTypography.bodyLg.copyWith(color: AppColors.textPrimary),
+                style:
+                    AppTypography.bodyLg.copyWith(color: AppColors.textPrimary),
                 cursorColor: AppColors.accentGreen,
                 decoration: InputDecoration(
                   isCollapsed: true,

@@ -9,7 +9,12 @@ class UserProfile {
   final DateTime? memberSince;
 
   const UserProfile({
-    required this.id, required this.name, required this.email,
-    this.phone, this.avatarUrl, this.totalBookings = 0, this.memberSince,
+    required this.id,
+    required this.name,
+    required this.email,
+    this.phone,
+    this.avatarUrl,
+    this.totalBookings = 0,
+    this.memberSince,
   });
 }

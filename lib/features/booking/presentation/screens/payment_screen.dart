@@ -1,23 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/turfx_widgets.dart';
+import '../../../turf_detail/domain/entities/time_slot.dart';
+import '../../../turf_detail/presentation/providers/turf_detail_provider.dart';
+import '../providers/booking_provider.dart';
 
-/// Payment (Dark) — Figma spec.
-class PaymentScreen extends StatefulWidget {
+/// Payment (Dark) — Figma spec, live-wired.
+class PaymentScreen extends ConsumerStatefulWidget {
   const PaymentScreen({super.key});
 
   @override
-  State<PaymentScreen> createState() => _PaymentScreenState();
+  ConsumerState<PaymentScreen> createState() => _PaymentScreenState();
 }
 
-class _PaymentScreenState extends State<PaymentScreen> {
+class _PaymentScreenState extends ConsumerState<PaymentScreen> {
+  static const _bookingFee = 20.0;
+  static const _gstRate = 0.18;
+
   int _selected = 0;
-  bool _paying = false;
 
   static const _methods = [
     _PaymentMethod(
@@ -48,17 +55,78 @@ class _PaymentScreenState extends State<PaymentScreen> {
     _UpiTile('Paytm', Icons.payment_rounded, Color(0xFF00BAF2)),
   ];
 
-  Future<void> _pay() async {
-    setState(() => _paying = true);
-    await Future.delayed(const Duration(seconds: 1));
-    if (mounted) {
-      setState(() => _paying = false);
+  Future<void> _pay({
+    required String turfId,
+    required String turfName,
+    required String turfImage,
+    required String turfLocation,
+    required List<TimeSlot> slots,
+    required double turfCharge,
+  }) async {
+    if (slots.isEmpty) return;
+    final sorted = [...slots]
+      ..sort((a, b) => a.startTime.compareTo(b.startTime));
+
+    ref
+        .read(bookingNotifierProvider.notifier)
+        .setPaymentMethod(_methods[_selected].title);
+
+    final booking =
+        await ref.read(bookingNotifierProvider.notifier).createBooking(
+              turfId: turfId,
+              turfName: turfName,
+              turfImage: turfImage,
+              turfLocation: turfLocation,
+              startTime: sorted.first.startTime,
+              endTime: sorted.last.endTime,
+              turfCharge: turfCharge,
+            );
+
+    if (!mounted) return;
+    if (booking != null) {
       context.go(RouteNames.bookingConfirmation);
+    } else {
+      final err = ref.read(bookingNotifierProvider).errorMessage;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(err ?? 'Payment failed. Please try again.')),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final booking = ref.watch(bookingNotifierProvider);
+    final turfId = booking.turfId;
+    final date = booking.selectedDate;
+
+    if (turfId == null || date == null || booking.selectedSlotIds.isEmpty) {
+      return Scaffold(
+        backgroundColor: AppColors.bg,
+        body: Center(
+          child: Text(
+            'No booking in progress.',
+            style:
+                AppTypography.bodyMd.copyWith(color: AppColors.textSecondary),
+          ),
+        ),
+      );
+    }
+
+    final detail = ref.watch(turfDetailProvider(turfId));
+    final slotsAsync = ref.watch(
+      turfSlotsStreamProvider((turfId: turfId, date: date)),
+    );
+
+    final selectedSlots = slotsAsync.asData?.value
+            .where((s) => booking.selectedSlotIds.contains(s.id))
+            .toList() ??
+        const <TimeSlot>[];
+    final turfCharge = selectedSlots.fold<double>(0, (a, s) => a + s.price);
+    final gst = (turfCharge + _bookingFee) * _gstRate;
+    final total = turfCharge + _bookingFee + gst;
+
+    final turf = detail.asData?.value;
+
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: Stack(
@@ -74,7 +142,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   padding: const EdgeInsets.only(left: 20),
                   child: TurfRoundIconButton(
                     icon: Icons.arrow_back_rounded,
-                    onPressed: () => context.pop(),
+                    onPressed: () => context.canPop()
+                        ? context.pop()
+                        : context.go(RouteNames.home),
                   ),
                 ),
                 centerTitle: false,
@@ -87,7 +157,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 200),
                 sliver: SliverList.list(
                   children: [
-                    _buildAmountHeader(),
+                    _buildAmountHeader(total),
                     const SizedBox(height: 24),
                     Text('Quick UPI',
                         style: AppTypography.h2
@@ -133,10 +203,21 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 child: Column(
                   children: [
                     TurfPrimaryButton(
-                      label: 'Pay ₹1,449',
+                      label: 'Pay ${Formatters.price(total)}',
                       leadingIcon: Icons.lock_rounded,
-                      isLoading: _paying,
-                      onPressed: _pay,
+                      isLoading: booking.isLoading,
+                      onPressed: (turf == null || selectedSlots.isEmpty)
+                          ? null
+                          : () => _pay(
+                                turfId: turfId,
+                                turfName: turf.name,
+                                turfImage: turf.images.isNotEmpty
+                                    ? turf.images.first
+                                    : '',
+                                turfLocation: turf.location,
+                                slots: selectedSlots,
+                                turfCharge: turfCharge,
+                              ),
                     ),
                     const SizedBox(height: 12),
                     Opacity(
@@ -164,16 +245,16 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  Widget _buildAmountHeader() {
+  Widget _buildAmountHeader(double total) {
     return Column(
       children: [
         Text('Total Amount Due',
             style: AppTypography.bodyXs
                 .copyWith(color: AppColors.textSecondaryAlt)),
         const SizedBox(height: 4),
-        Text('₹1,449',
-            style: AppTypography.displayLg
-                .copyWith(color: AppColors.textPrimary)),
+        Text(Formatters.price(total),
+            style:
+                AppTypography.displayLg.copyWith(color: AppColors.textPrimary)),
         const SizedBox(height: 4),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -257,8 +338,7 @@ class _PaymentMethodRow extends StatelessWidget {
                 color: AppColors.divider,
                 shape: BoxShape.circle,
               ),
-              child: Icon(method.icon,
-                  size: 20, color: AppColors.textPrimary),
+              child: Icon(method.icon, size: 20, color: AppColors.textPrimary),
             ),
             const SizedBox(width: 16),
             Expanded(

@@ -1,1 +1,1 @@
-abstract class MyBookingsRemoteDataSource { /* TODO: Implement */ }
+abstract class MyBookingsRemoteDataSource {/* TODO: Implement */}

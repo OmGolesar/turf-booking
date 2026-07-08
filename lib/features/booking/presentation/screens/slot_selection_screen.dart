@@ -1,14 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/turfx_widgets.dart';
+import '../../../turf_detail/domain/entities/time_slot.dart';
+import '../../../turf_detail/domain/entities/turf_detail.dart';
+import '../../../turf_detail/presentation/providers/turf_detail_provider.dart';
+import '../providers/booking_provider.dart';
 
-/// Date & Slot Selection (Dark) — Figma spec.
-class SlotSelectionScreen extends StatefulWidget {
+const _months = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
+const _dow = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+
+/// Date & Slot Selection (Dark) — Figma spec, live-wired to Firestore.
+class SlotSelectionScreen extends ConsumerStatefulWidget {
   final String turfId;
   final String date;
   const SlotSelectionScreen({
@@ -18,40 +41,54 @@ class SlotSelectionScreen extends StatefulWidget {
   });
 
   @override
-  State<SlotSelectionScreen> createState() => _SlotSelectionScreenState();
+  ConsumerState<SlotSelectionScreen> createState() =>
+      _SlotSelectionScreenState();
 }
 
-class _SlotSelectionScreenState extends State<SlotSelectionScreen> {
-  int _selectedDate = 1; // 0..6 (default TUE 17)
-  final Set<String> _selectedSlots = {'05:00 PM', '06:00 PM'};
+class _SlotSelectionScreenState extends ConsumerState<SlotSelectionScreen> {
+  late DateTime _selectedDate;
+  late final List<DateTime> _dateItems;
 
-  static const _bookedSlots = {'08:00 AM', '03:00 PM'};
+  @override
+  void initState() {
+    super.initState();
+    final today = DateTime.now();
+    _dateItems = List.generate(
+      7,
+      (i) => DateTime(today.year, today.month, today.day + i),
+    );
+    _selectedDate = _dateItems.first;
 
-  static const _dateItems = [
-    _DateItem('MON', '16'),
-    _DateItem('TUE', '17'),
-    _DateItem('WED', '18'),
-    _DateItem('THU', '19'),
-    _DateItem('FRI', '20'),
-    _DateItem('SAT', '21'),
-    _DateItem('SUN', '22'),
-  ];
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(bookingNotifierProvider.notifier)
+        ..clearSlots()
+        ..setTurf(widget.turfId)
+        ..setDate(_isoDate(_selectedDate));
+    });
+  }
 
-  static const _morning = [
-    '06:00 AM', '07:00 AM', '08:00 AM',
-    '09:00 AM', '10:00 AM', '11:00 AM',
-  ];
-  static const _afternoon = [
-    '12:00 PM', '01:00 PM', '02:00 PM',
-    '03:00 PM', '04:00 PM',
-  ];
-  static const _evening = [
-    '05:00 PM', '06:00 PM', '07:00 PM',
-    '08:00 PM', '09:00 PM',
-  ];
+  String _isoDate(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  String _fmt12h(String hhmm) {
+    final parts = hhmm.split(':');
+    if (parts.length < 2) return hhmm;
+    final h = int.tryParse(parts[0]) ?? 0;
+    final m = parts[1];
+    final period = h >= 12 ? 'PM' : 'AM';
+    final h12 = h > 12 ? h - 12 : (h == 0 ? 12 : h);
+    return '$h12:$m $period';
+  }
 
   @override
   Widget build(BuildContext context) {
+    final detail = ref.watch(turfDetailProvider(widget.turfId));
+    final slotsAsync = ref.watch(turfSlotsStreamProvider(
+      (turfId: widget.turfId, date: _isoDate(_selectedDate)),
+    ));
+    final bookingState = ref.watch(bookingNotifierProvider);
+    final selectedIds = bookingState.selectedSlotIds;
+
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: Stack(
@@ -68,31 +105,53 @@ class _SlotSelectionScreenState extends State<SlotSelectionScreen> {
                   child: TurfRoundIconButton(
                     icon: Icons.arrow_back_rounded,
                     background: AppColors.surface,
-                    onPressed: () => context.pop(),
+                    onPressed: () => context.canPop()
+                        ? context.pop()
+                        : context.go(RouteNames.home),
                   ),
                 ),
                 centerTitle: true,
                 title: Text(
                   'Pick Date & Slot',
-                  style: AppTypography.h2
-                      .copyWith(color: AppColors.textPrimary),
+                  style:
+                      AppTypography.h2.copyWith(color: AppColors.textPrimary),
                 ),
               ),
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 140),
                 sliver: SliverList.list(
                   children: [
-                    _buildSummaryCard(),
+                    _buildSummaryCard(detail),
                     const SizedBox(height: 24),
                     _buildDatePicker(),
                     const SizedBox(height: 24),
                     _buildAvailableSlotsHeader(),
                     const SizedBox(height: 16),
-                    _buildSlotGroup('MORNING', _morning),
-                    const SizedBox(height: 16),
-                    _buildSlotGroup('AFTERNOON', _afternoon),
-                    const SizedBox(height: 16),
-                    _buildSlotGroup('EVENING', _evening),
+                    ...slotsAsync.when(
+                      data: (slots) => _buildSlotSections(slots, selectedIds),
+                      loading: () => const [
+                        Padding(
+                          padding: EdgeInsets.symmetric(vertical: 40),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                                color: AppColors.primary),
+                          ),
+                        ),
+                      ],
+                      error: (e, _) => [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 40),
+                          child: Center(
+                            child: Text(
+                              'Could not load slots.',
+                              style: AppTypography.bodyMd.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -114,12 +173,12 @@ class _SlotSelectionScreenState extends State<SlotSelectionScreen> {
                 ),
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
                 child: TurfPrimaryButton(
-                  label: _selectedSlots.isEmpty
+                  label: selectedIds.isEmpty
                       ? 'Select a Slot'
-                      : 'Confirm Selection',
-                  onPressed: _selectedSlots.isEmpty
+                      : 'Confirm Selection (${selectedIds.length})',
+                  onPressed: selectedIds.isEmpty
                       ? null
-                      : () => context.go(RouteNames.bookingSummary),
+                      : () => context.push(RouteNames.bookingSummary),
                 ),
               ),
             ),
@@ -129,57 +188,78 @@ class _SlotSelectionScreenState extends State<SlotSelectionScreen> {
     );
   }
 
-  Widget _buildSummaryCard() {
+  Widget _buildSummaryCard(AsyncValue<TurfDetail> detail) {
     return TurfElevatedCard(
       fillColor: AppColors.bgDeep,
       borderColor: AppColors.divider,
       radius: 18,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: detail.when(
+        data: (turf) => Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(turf.name,
+                      style: AppTypography.h2.copyWith(
+                        color: AppColors.textPrimary,
+                      )),
+                  const SizedBox(height: 4),
+                  Text(
+                    turf.sports.isNotEmpty
+                        ? turf.sports.join(' · ')
+                        : 'Synthetic Pitch',
+                    style: AppTypography.bodyXs.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text('Downtown Premium Turf',
+                Text(Formatters.price(turf.pricePerHour),
                     style: AppTypography.h2.copyWith(
-                      color: AppColors.textPrimary,
+                      color: AppColors.accentGreenBright,
                     )),
-                const SizedBox(height: 4),
-                Text('5v5 Synthetic Pitch',
+                Text('/hr',
                     style: AppTypography.bodyXs.copyWith(
                       color: AppColors.textSecondary,
                     )),
               ],
             ),
+          ],
+        ),
+        loading: () => const SizedBox(
+          height: 44,
+          child: Center(
+            child: SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                  strokeWidth: 2, color: AppColors.primary),
+            ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text('\$45',
-                  style: AppTypography.h2.copyWith(
-                    color: AppColors.accentGreenBright,
-                  )),
-              Text('/hr',
-                  style: AppTypography.bodyXs.copyWith(
-                    color: AppColors.textSecondary,
-                  )),
-            ],
-          ),
-        ],
+        ),
+        error: (_, __) => Text(
+          'Turf info unavailable',
+          style: AppTypography.bodyMd.copyWith(color: AppColors.textSecondary),
+        ),
       ),
     );
   }
 
   Widget _buildDatePicker() {
+    final month = _months[_selectedDate.month - 1];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 4),
-          child: Text('October 2023',
-              style: AppTypography.h2
-                  .copyWith(color: AppColors.textPrimary)),
+          child: Text('$month ${_selectedDate.year}',
+              style: AppTypography.h2.copyWith(color: AppColors.textPrimary)),
         ),
         const SizedBox(height: 8),
         SizedBox(
@@ -190,9 +270,17 @@ class _SlotSelectionScreenState extends State<SlotSelectionScreen> {
             itemCount: _dateItems.length,
             separatorBuilder: (_, __) => const SizedBox(width: 8),
             itemBuilder: (context, i) {
-              final active = i == _selectedDate;
+              final d = _dateItems[i];
+              final active = d.day == _selectedDate.day &&
+                  d.month == _selectedDate.month &&
+                  d.year == _selectedDate.year;
               return GestureDetector(
-                onTap: () => setState(() => _selectedDate = i),
+                onTap: () {
+                  setState(() => _selectedDate = d);
+                  ref.read(bookingNotifierProvider.notifier)
+                    ..clearSlots()
+                    ..setDate(_isoDate(d));
+                },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
                   width: 72,
@@ -218,7 +306,7 @@ class _SlotSelectionScreenState extends State<SlotSelectionScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        _dateItems[i].dow,
+                        _dow[d.weekday - 1],
                         style: AppTypography.labelMdCtaUpper.copyWith(
                           color: active
                               ? AppColors.accentGreenBright
@@ -227,7 +315,7 @@ class _SlotSelectionScreenState extends State<SlotSelectionScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        _dateItems[i].day,
+                        d.day.toString().padLeft(2, '0'),
                         style: AppTypography.h2.copyWith(
                           color: active
                               ? AppColors.onPrimary
@@ -272,7 +360,65 @@ class _SlotSelectionScreenState extends State<SlotSelectionScreen> {
     );
   }
 
-  Widget _buildSlotGroup(String label, List<String> slots) {
+  List<Widget> _buildSlotSections(
+      List<TimeSlot> slots, Set<String> selectedIds) {
+    if (slots.isEmpty) {
+      return [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 40),
+          child: Center(
+            child: Text(
+              'No slots available for this date.',
+              style:
+                  AppTypography.bodyMd.copyWith(color: AppColors.textSecondary),
+            ),
+          ),
+        ),
+      ];
+    }
+
+    // De-dup by startTime — pick the first available slot per hour (across grounds)
+    final byHour = <String, TimeSlot>{};
+    for (final s in slots) {
+      final existing = byHour[s.startTime];
+      if (existing == null) {
+        byHour[s.startTime] = s;
+      } else if (existing.isBooked && s.isAvailable) {
+        byHour[s.startTime] = s;
+      }
+    }
+    final unique = byHour.values.toList()
+      ..sort((a, b) => a.startTime.compareTo(b.startTime));
+
+    final morning = <TimeSlot>[];
+    final afternoon = <TimeSlot>[];
+    final evening = <TimeSlot>[];
+    for (final s in unique) {
+      final h = int.tryParse(s.startTime.split(':').first) ?? 0;
+      if (h < 12) {
+        morning.add(s);
+      } else if (h < 17) {
+        afternoon.add(s);
+      } else {
+        evening.add(s);
+      }
+    }
+
+    final widgets = <Widget>[];
+    void addGroup(String label, List<TimeSlot> group) {
+      if (group.isEmpty) return;
+      widgets.add(_buildSlotGroup(label, group, selectedIds));
+      widgets.add(const SizedBox(height: 16));
+    }
+
+    addGroup('MORNING', morning);
+    addGroup('AFTERNOON', afternoon);
+    addGroup('EVENING', evening);
+    return widgets;
+  }
+
+  Widget _buildSlotGroup(
+      String label, List<TimeSlot> slots, Set<String> selectedIds) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -289,20 +435,20 @@ class _SlotSelectionScreenState extends State<SlotSelectionScreen> {
           crossAxisSpacing: 8,
           mainAxisSpacing: 8,
           childAspectRatio: 110 / 48,
-          children: slots.map(_slotCell).toList(),
+          children: slots.map((s) => _slotCell(s, selectedIds)).toList(),
         ),
       ],
     );
   }
 
-  Widget _slotCell(String slot) {
-    final isBooked = _bookedSlots.contains(slot);
-    final isSelected = _selectedSlots.contains(slot);
+  Widget _slotCell(TimeSlot slot, Set<String> selectedIds) {
+    final isAvailable = slot.isAvailable;
+    final isSelected = selectedIds.contains(slot.id);
 
     Color bg;
     Color textColor;
     Color? borderColor;
-    if (isBooked) {
+    if (!isAvailable) {
       bg = AppColors.surfaceDim;
       textColor = AppColors.textDisabled;
       borderColor = null;
@@ -317,15 +463,12 @@ class _SlotSelectionScreenState extends State<SlotSelectionScreen> {
     }
 
     return GestureDetector(
-      onTap: isBooked
+      onTap: !isAvailable
           ? null
-          : () => setState(() {
-                if (isSelected) {
-                  _selectedSlots.remove(slot);
-                } else {
-                  _selectedSlots.add(slot);
-                }
-              }),
+          : () {
+              ref.read(bookingNotifierProvider.notifier).toggleSlot(slot.id);
+              ref.read(bookingNotifierProvider.notifier).setSport(slot.sport);
+            },
       child: Container(
         decoration: BoxDecoration(
           color: bg,
@@ -336,7 +479,7 @@ class _SlotSelectionScreenState extends State<SlotSelectionScreen> {
         ),
         alignment: Alignment.center,
         child: Text(
-          slot,
+          _fmt12h(slot.startTime),
           style: AppTypography.bodyXs.copyWith(
             color: textColor,
             fontWeight: isSelected ? FontWeight.w600 : null,
@@ -345,10 +488,4 @@ class _SlotSelectionScreenState extends State<SlotSelectionScreen> {
       ),
     );
   }
-}
-
-class _DateItem {
-  final String dow;
-  final String day;
-  const _DateItem(this.dow, this.day);
 }

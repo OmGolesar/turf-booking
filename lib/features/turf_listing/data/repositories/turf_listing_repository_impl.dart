@@ -8,7 +8,12 @@ import '../../../home/domain/entities/turf_summary.dart';
 class TurfListingRepositoryImpl implements TurfListingRepository {
   @override
   Future<({Pagination<TurfSummary>? data, Failure? failure})> getTurfs({
-    required int page, int pageSize = 20, TurfFilter? filter,
-    TurfSortBy sortBy = TurfSortBy.nearest, String? searchQuery,
-  }) async { throw UnimplementedError(); }
+    required int page,
+    int pageSize = 20,
+    TurfFilter? filter,
+    TurfSortBy sortBy = TurfSortBy.nearest,
+    String? searchQuery,
+  }) async {
+    throw UnimplementedError();
+  }
 }

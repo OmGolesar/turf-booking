@@ -40,7 +40,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ],
             ),
-
             const SizedBox(height: 20),
             const _SectionLabel('Notifications'),
             const SizedBox(height: 8),
@@ -70,7 +69,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ],
             ),
-
             const SizedBox(height: 20),
             const _SectionLabel('About'),
             const SizedBox(height: 8),
@@ -95,7 +93,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ],
             ),
-
             const SizedBox(height: 32),
             Center(
               child: Text(
@@ -194,7 +191,8 @@ class _SwitchTile extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(sub,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurface.withValues(alpha: 0.5),
+                              color:
+                                  colorScheme.onSurface.withValues(alpha: 0.5),
                             )),
                   ],
                 ),

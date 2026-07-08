@@ -1,18 +1,92 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/turfx_widgets.dart';
+import '../../../turf_detail/domain/entities/time_slot.dart';
+import '../../../turf_detail/presentation/providers/turf_detail_provider.dart';
+import '../providers/booking_provider.dart';
 
-/// Booking Summary (Dark) — Figma spec.
-class BookingSummaryScreen extends StatelessWidget {
+/// Booking Summary (Dark) — Figma spec, live-wired.
+class BookingSummaryScreen extends ConsumerWidget {
   const BookingSummaryScreen({super.key});
 
+  static const _bookingFee = 20.0;
+  static const _gstRate = 0.18;
+
+  String _fmt12h(String hhmm) {
+    final parts = hhmm.split(':');
+    if (parts.length < 2) return hhmm;
+    final h = int.tryParse(parts[0]) ?? 0;
+    final m = parts[1];
+    final period = h >= 12 ? 'PM' : 'AM';
+    final h12 = h > 12 ? h - 12 : (h == 0 ? 12 : h);
+    return '$h12:$m $period';
+  }
+
+  String _prettyDate(String iso) {
+    if (iso.isEmpty) return '—';
+    final parts = iso.split('-');
+    if (parts.length != 3) return iso;
+    try {
+      final y = int.parse(parts[0]);
+      final mo = int.parse(parts[1]);
+      final d = int.parse(parts[2]);
+      final dt = DateTime(y, mo, d);
+      const dow = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
+      return '${dow[dt.weekday - 1]}, ${months[mo - 1]} $d';
+    } catch (_) {
+      return iso;
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final booking = ref.watch(bookingNotifierProvider);
+    final turfId = booking.turfId;
+    final date = booking.selectedDate;
+
+    if (turfId == null || date == null || booking.selectedSlotIds.isEmpty) {
+      return Scaffold(
+        backgroundColor: AppColors.surface,
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              'No slots selected. Please pick a slot first.',
+              textAlign: TextAlign.center,
+              style:
+                  AppTypography.bodyMd.copyWith(color: AppColors.textSecondary),
+            ),
+          ),
+        ),
+      );
+    }
+
+    final detail = ref.watch(turfDetailProvider(turfId));
+    final slotsAsync = ref.watch(
+      turfSlotsStreamProvider((turfId: turfId, date: date)),
+    );
+
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: Stack(
@@ -28,20 +102,31 @@ class BookingSummaryScreen extends StatelessWidget {
                   padding: const EdgeInsets.only(left: 20),
                   child: TurfRoundIconButton(
                     icon: Icons.arrow_back_rounded,
-                    onPressed: () => context.pop(),
+                    onPressed: () => context.canPop()
+                        ? context.pop()
+                        : context.go(RouteNames.home),
                   ),
                 ),
                 centerTitle: true,
                 title: Text('Booking Summary',
-                    style: AppTypography.h2.copyWith(
-                      color: AppColors.textPrimary,
-                    )),
+                    style: AppTypography.h2
+                        .copyWith(color: AppColors.textPrimary)),
               ),
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 160),
                 sliver: SliverList.list(
                   children: [
-                    _buildReceiptCard(context),
+                    _buildReceiptCard(
+                      context,
+                      turfName: detail.asData?.value.name ?? '—',
+                      turfLocation: detail.asData?.value.location ?? '',
+                      dateLabel: _prettyDate(date),
+                      slots: slotsAsync.asData?.value
+                              .where(
+                                  (s) => booking.selectedSlotIds.contains(s.id))
+                              .toList() ??
+                          const <TimeSlot>[],
+                    ),
                     const SizedBox(height: 24),
                     _buildCouponInput(context),
                   ],
@@ -68,7 +153,7 @@ class BookingSummaryScreen extends StatelessWidget {
                   label: 'Proceed to Payment',
                   trailingIcon: Icons.arrow_forward_rounded,
                   variant: TurfPrimaryVariant.bright,
-                  onPressed: () => context.go(RouteNames.payment),
+                  onPressed: () => context.push(RouteNames.payment),
                 ),
               ),
             ),
@@ -78,7 +163,24 @@ class BookingSummaryScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildReceiptCard(BuildContext context) {
+  Widget _buildReceiptCard(
+    BuildContext context, {
+    required String turfName,
+    required String turfLocation,
+    required String dateLabel,
+    required List<TimeSlot> slots,
+  }) {
+    final slotsSorted = [...slots]
+      ..sort((a, b) => a.startTime.compareTo(b.startTime));
+    final startLabel =
+        slotsSorted.isEmpty ? '—' : _fmt12h(slotsSorted.first.startTime);
+    final endLabel =
+        slotsSorted.isEmpty ? '—' : _fmt12h(slotsSorted.last.endTime);
+    final hours = slotsSorted.length;
+    final turfCharge = slotsSorted.fold<double>(0, (a, s) => a + s.price);
+    final gst = (turfCharge + _bookingFee) * _gstRate;
+    final total = turfCharge + _bookingFee + gst;
+
     return TurfElevatedCard(
       radius: 18,
       child: Column(
@@ -91,7 +193,7 @@ class BookingSummaryScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Central Arena',
+                    Text(turfName,
                         style: AppTypography.h1
                             .copyWith(color: AppColors.textPrimary)),
                     const SizedBox(height: 4),
@@ -100,10 +202,12 @@ class BookingSummaryScreen extends StatelessWidget {
                         const Icon(Icons.location_on_outlined,
                             size: 13, color: AppColors.textSecondaryAlt),
                         const SizedBox(width: 4),
-                        Text('Downtown Sports Complex',
-                            style: AppTypography.bodyXs.copyWith(
-                              color: AppColors.textSecondaryAlt,
-                            )),
+                        Expanded(
+                          child: Text(turfLocation,
+                              style: AppTypography.bodyXs.copyWith(
+                                color: AppColors.textSecondaryAlt,
+                              )),
+                        ),
                       ],
                     ),
                   ],
@@ -124,27 +228,22 @@ class BookingSummaryScreen extends StatelessWidget {
           const SizedBox(height: 16),
           const Divider(color: AppColors.borderMuted, height: 1),
           const SizedBox(height: 16),
-
-          _detailRow('Date', 'Sat, Oct 14'),
+          _detailRow('Date', dateLabel),
           const SizedBox(height: 16),
-          _detailRow('Time Slots', '6:00 PM - 8:00 PM'),
+          _detailRow('Time Slots', '$startLabel - $endLabel'),
           const SizedBox(height: 16),
-          _detailRow('Duration', '2 Hours'),
-
+          _detailRow('Duration', hours == 1 ? '1 Hour' : '$hours Hours'),
           const SizedBox(height: 20),
           _dashDivider(),
           const SizedBox(height: 16),
-
-          _costRow('Slot Rate (2 hrs)', '\$80.00'),
+          _costRow('Slot Rate (${hours}hr)', Formatters.price(turfCharge)),
           const SizedBox(height: 8),
-          _costRow('Platform Fee', '\$2.50'),
+          _costRow('Platform Fee', Formatters.price(_bookingFee)),
           const SizedBox(height: 8),
-          _costRow('GST (18%)', '\$14.85'),
-
+          _costRow('GST (18%)', Formatters.price(gst)),
           const SizedBox(height: 16),
           const Divider(color: AppColors.borderMuted, height: 1),
           const SizedBox(height: 16),
-
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -162,7 +261,7 @@ class BookingSummaryScreen extends StatelessWidget {
                 ],
               ),
               const Spacer(),
-              Text('\$97.35',
+              Text(Formatters.price(total),
                   style: AppTypography.displayXxl.copyWith(
                     color: AppColors.primary,
                   )),

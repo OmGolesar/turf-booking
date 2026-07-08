@@ -194,7 +194,7 @@ class AppTypography {
     height: 15 / 10,
   );
 
-  /// 10/14, 500 — small chip text (5v5, "$45" small, "Next slot").
+  /// 10/14, 500 — small chip text (5v5, "₹1,200" small, "Next slot").
   static const TextStyle labelXs = TextStyle(
     fontFamily: _fontFamily,
     fontSize: 10,

@@ -91,16 +91,14 @@ class ProfileScreen extends StatelessWidget {
                         height: 32,
                         width: 1,
                         color: Colors.white24,
-                        margin:
-                            const EdgeInsets.symmetric(horizontal: 24),
+                        margin: const EdgeInsets.symmetric(horizontal: 24),
                       ),
                       const _StatBadge(label: 'Turfs Played', value: '8'),
                       Container(
                         height: 32,
                         width: 1,
                         color: Colors.white24,
-                        margin:
-                            const EdgeInsets.symmetric(horizontal: 24),
+                        margin: const EdgeInsets.symmetric(horizontal: 24),
                       ),
                       const _StatBadge(label: 'Hours', value: '24'),
                     ],
@@ -189,8 +187,7 @@ class ProfileScreen extends StatelessWidget {
                     child: Text(
                       'TurfX v1.0.0',
                       style: textTheme.bodySmall?.copyWith(
-                          color:
-                              colorScheme.onSurface.withValues(alpha: 0.3)),
+                          color: colorScheme.onSurface.withValues(alpha: 0.3)),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -217,7 +214,9 @@ class _StatBadge extends StatelessWidget {
       children: [
         Text(value,
             style: const TextStyle(
-                color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.w800)),
         const SizedBox(height: 2),
         Text(label,
             style: const TextStyle(color: Colors.white54, fontSize: 12)),

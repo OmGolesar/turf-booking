@@ -32,7 +32,8 @@ class AuthRepositoryImpl implements AuthRepository {
     String? phone,
   }) async {
     try {
-      return await _remote.signup(name: name, email: email, password: password, phone: phone);
+      return await _remote.signup(
+          name: name, email: email, password: password, phone: phone);
     } on fb.FirebaseAuthException catch (e) {
       throw _mapFirebaseException(e);
     }
@@ -49,7 +50,8 @@ class AuthRepositoryImpl implements AuthRepository {
       case 'wrong-password':
         return Exception('Incorrect password. Please try again.');
       case 'email-already-in-use':
-        return Exception('An account with this email already exists. Please log in.');
+        return Exception(
+            'An account with this email already exists. Please log in.');
       case 'invalid-email':
         return Exception('Please enter a valid email address.');
       case 'weak-password':
@@ -61,7 +63,8 @@ class AuthRepositoryImpl implements AuthRepository {
       case 'invalid-credential':
         return Exception('Invalid email or password. Please try again.');
       default:
-        return Exception(e.message ?? 'Authentication failed. Please try again.');
+        return Exception(
+            e.message ?? 'Authentication failed. Please try again.');
     }
   }
 }

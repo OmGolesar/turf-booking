@@ -2,8 +2,10 @@ import '../../domain/entities/category.dart';
 
 class CategoryModel extends Category {
   const CategoryModel({
-    required super.id, required super.name,
-    required super.iconUrl, required super.turfCount,
+    required super.id,
+    required super.name,
+    required super.iconUrl,
+    required super.turfCount,
   });
 
   factory CategoryModel.fromJson(Map<String, dynamic> json) {

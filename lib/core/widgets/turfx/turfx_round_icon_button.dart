@@ -40,7 +40,8 @@ class TurfRoundIconButton extends StatelessWidget {
         child: InkWell(
           customBorder: const CircleBorder(),
           onTap: onPressed,
-          child: Icon(icon, size: iconSize, color: foreground ?? AppColors.textPrimary),
+          child: Icon(icon,
+              size: iconSize, color: foreground ?? AppColors.textPrimary),
         ),
       ),
     );

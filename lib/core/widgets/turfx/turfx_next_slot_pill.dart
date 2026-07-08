@@ -26,7 +26,8 @@ class TurfNextSlotPill extends StatelessWidget {
             const SizedBox(width: 4),
             Text(
               'Next slot: $time',
-              style: AppTypography.labelXs.copyWith(color: AppColors.textSecondary),
+              style: AppTypography.labelXs
+                  .copyWith(color: AppColors.textSecondary),
             ),
           ],
         ),

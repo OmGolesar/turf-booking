@@ -1,1 +1,1 @@
-abstract class ProfileRemoteDataSource { /* TODO: Implement */ }
+abstract class ProfileRemoteDataSource {/* TODO: Implement */}

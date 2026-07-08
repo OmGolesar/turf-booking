@@ -7,5 +7,6 @@ class GetTurfDetailUseCase implements UseCase<TurfDetail, String> {
   final TurfDetailRepository repository;
   const GetTurfDetailUseCase(this.repository);
   @override
-  Future<({TurfDetail? data, Failure? failure})> call(String params) => repository.getTurfDetail(params);
+  Future<({TurfDetail? data, Failure? failure})> call(String params) =>
+      repository.getTurfDetail(params);
 }

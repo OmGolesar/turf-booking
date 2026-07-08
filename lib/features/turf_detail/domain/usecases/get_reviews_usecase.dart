@@ -7,5 +7,6 @@ class GetReviewsUseCase implements UseCase<List<Review>, String> {
   final TurfDetailRepository repository;
   const GetReviewsUseCase(this.repository);
   @override
-  Future<({List<Review>? data, Failure? failure})> call(String params) => repository.getReviews(params);
+  Future<({List<Review>? data, Failure? failure})> call(String params) =>
+      repository.getReviews(params);
 }

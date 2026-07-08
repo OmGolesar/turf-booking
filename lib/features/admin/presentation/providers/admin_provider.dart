@@ -12,7 +12,8 @@ import '../../../turf_detail/domain/entities/time_slot.dart';
 class AdminDataSource {
   final FirebaseFirestore _db;
 
-  AdminDataSource({FirebaseFirestore? db}) : _db = db ?? FirebaseFirestore.instance;
+  AdminDataSource({FirebaseFirestore? db})
+      : _db = db ?? FirebaseFirestore.instance;
 
   /// Blocks a specific slot (e.g., maintenance, private event).
   Future<void> blockSlot(String turfId, String slotId, String reason) async {
@@ -35,7 +36,8 @@ class AdminDataSource {
   }
 
   /// Updates turf information.
-  Future<void> updateTurfInfo(String turfId, Map<String, dynamic> updates) async {
+  Future<void> updateTurfInfo(
+      String turfId, Map<String, dynamic> updates) async {
     await _db.collection('turfs').doc(turfId).update({
       ...updates,
       'updatedAt': FieldValue.serverTimestamp(),
@@ -45,7 +47,8 @@ class AdminDataSource {
   /// Returns today's bookings for a turf as a stream.
   Stream<List<Booking>> getTodayBookingsStream(String turfId) {
     final today = DateTime.now();
-    final dateStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    final dateStr =
+        '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
     return FirebaseFirestore.instance
         .collection('bookings')
         .where('turfId', isEqualTo: turfId)
@@ -70,13 +73,16 @@ class AdminDataSource {
 
 // ── Admin Providers ───────────────────────────────────────────────────────────
 
-final adminDataSourceProvider = Provider<AdminDataSource>((ref) => AdminDataSource());
+final adminDataSourceProvider =
+    Provider<AdminDataSource>((ref) => AdminDataSource());
 
-final bookingDataSourceForAdminProvider = Provider<BookingRemoteDataSource>((ref) {
+final bookingDataSourceForAdminProvider =
+    Provider<BookingRemoteDataSource>((ref) {
   return BookingRemoteDataSourceImpl();
 });
 
-final turfDetailDataSourceForAdminProvider = Provider<TurfDetailRemoteDataSource>((ref) {
+final turfDetailDataSourceForAdminProvider =
+    Provider<TurfDetailRemoteDataSource>((ref) {
   return TurfDetailRemoteDataSourceImpl();
 });
 
@@ -95,7 +101,8 @@ final adminSelectedDateProvider = StateProvider<String>((ref) {
   return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
 });
 
-final adminSlotsStreamProvider = StreamProvider.autoDispose<List<TimeSlot>>((ref) {
+final adminSlotsStreamProvider =
+    StreamProvider.autoDispose<List<TimeSlot>>((ref) {
   final user = ref.watch(authNotifierProvider).user;
   final turfId = user?.managedTurfId;
   final date = ref.watch(adminSelectedDateProvider);

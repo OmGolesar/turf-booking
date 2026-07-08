@@ -62,11 +62,13 @@ class _AdminBookingFormScreenState
       // Get slot details to compute times and price
       final slotsAsync = ref.read(adminSlotsStreamProvider);
       final slots = slotsAsync.value ?? [];
-      final selectedSlots =
-          slots.where((s) => _selectedSlotIds.contains(s.id)).toList()
-            ..sort((a, b) => a.startTime.compareTo(b.startTime));
+      final selectedSlots = slots
+          .where((s) => _selectedSlotIds.contains(s.id))
+          .toList()
+        ..sort((a, b) => a.startTime.compareTo(b.startTime));
 
-      if (selectedSlots.isEmpty) throw Exception('Could not find slot details.');
+      if (selectedSlots.isEmpty)
+        throw Exception('Could not find slot details.');
 
       final startTime = selectedSlots.first.startTime;
       final endTime = selectedSlots.last.endTime;
@@ -80,7 +82,8 @@ class _AdminBookingFormScreenState
         turfLocation: 'Nashik',
         userId: user.id,
         userName: _nameCtrl.text.trim(),
-        userPhone: _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
+        userPhone:
+            _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
         date: _todayStr,
         slotIds: _selectedSlotIds,
         startTime: startTime,
@@ -132,7 +135,8 @@ class _AdminBookingFormScreenState
           children: [
             // ── Booking Source ─────────────────────────────────────────────
             Text('Booking Source',
-                style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+                style: textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -178,7 +182,8 @@ class _AdminBookingFormScreenState
 
             // ── Sport ──────────────────────────────────────────────────────
             Text('Sport',
-                style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+                style: textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -187,7 +192,8 @@ class _AdminBookingFormScreenState
                         label: Text(s),
                         selected: _selectedSport == s,
                         onSelected: (_) => setState(() => _selectedSport = s),
-                        selectedColor: AppColors.primary.withValues(alpha: 0.15),
+                        selectedColor:
+                            AppColors.primary.withValues(alpha: 0.15),
                       ))
                   .toList(),
             ),
@@ -196,7 +202,8 @@ class _AdminBookingFormScreenState
 
             // ── Slot Selection ─────────────────────────────────────────────
             Text("Select Slots (Today: $_todayStr)",
-                style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+                style: textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
 
             slotsAsync.when(
@@ -205,8 +212,7 @@ class _AdminBookingFormScreenState
               ),
               error: (e, _) => Text('Error loading slots: $e'),
               data: (slots) {
-                final available =
-                    slots.where((s) => s.isAvailable).toList();
+                final available = slots.where((s) => s.isAvailable).toList();
                 if (available.isEmpty) {
                   return const Text('No available slots for today.');
                 }

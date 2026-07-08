@@ -15,12 +15,14 @@ class GetNearbyTurfsParams {
   });
 }
 
-class GetNearbyTurfsUseCase implements UseCase<List<TurfSummary>, GetNearbyTurfsParams> {
+class GetNearbyTurfsUseCase
+    implements UseCase<List<TurfSummary>, GetNearbyTurfsParams> {
   final HomeRepository repository;
   const GetNearbyTurfsUseCase(this.repository);
 
   @override
-  Future<({List<TurfSummary>? data, Failure? failure})> call(GetNearbyTurfsParams params) {
+  Future<({List<TurfSummary>? data, Failure? failure})> call(
+      GetNearbyTurfsParams params) {
     return repository.getNearbyTurfs(
       latitude: params.latitude,
       longitude: params.longitude,

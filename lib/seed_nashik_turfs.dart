@@ -4,9 +4,11 @@ const nashikTurfs = [
   {
     "id": "nashik-turf-001",
     "name": "Green Kick Arena",
-    "description": "Premium football turf in the heart of Nashik. FIFA-quality artificial grass with floodlights for night games. Ideal for 5-a-side and 7-a-side matches.",
+    "description":
+        "Premium football turf in the heart of Nashik. FIFA-quality artificial grass with floodlights for night games. Ideal for 5-a-side and 7-a-side matches.",
     "location": "Gangapur Road, Nashik",
-    "address": "Plot No. 42, Gangapur Road, Near Rajiv Gandhi Bhavan, Nashik 422013",
+    "address":
+        "Plot No. 42, Gangapur Road, Near Rajiv Gandhi Bhavan, Nashik 422013",
     "city": "Nashik",
     "latitude": 20.0059,
     "longitude": 73.7835,
@@ -21,7 +23,13 @@ const nashikTurfs = [
     "priceWeekday": 800.0,
     "priceWeekend": 1000.0,
     "sports": ["Football"],
-    "amenities": ["Parking", "Floodlights", "Washroom", "Changing Room", "Drinking Water"],
+    "amenities": [
+      "Parking",
+      "Floodlights",
+      "Washroom",
+      "Changing Room",
+      "Drinking Water"
+    ],
     "ownerUid": "OWNER_UID_REPLACE",
     "ownerName": "Rahul Deshmukh",
     "ownerPhone": "+91 94201 11111",
@@ -39,7 +47,8 @@ const nashikTurfs = [
   {
     "id": "nashik-turf-002",
     "name": "Champions Cricket Hub",
-    "description": "State-of-the-art box cricket facility with synthetic pitch. Perfect for corporate matches, tournaments, and casual games. Indoor and outdoor options available.",
+    "description":
+        "State-of-the-art box cricket facility with synthetic pitch. Perfect for corporate matches, tournaments, and casual games. Indoor and outdoor options available.",
     "location": "Pathardi Phata, Nashik",
     "address": "S.No. 15, Pathardi Phata, Near Lodha Splendora, Nashik 422010",
     "city": "Nashik",
@@ -55,7 +64,14 @@ const nashikTurfs = [
     "priceWeekday": 900.0,
     "priceWeekend": 1200.0,
     "sports": ["Cricket", "Box Cricket"],
-    "amenities": ["Parking", "Floodlights", "Washroom", "Drinking Water", "Seating Area", "Scoreboard"],
+    "amenities": [
+      "Parking",
+      "Floodlights",
+      "Washroom",
+      "Drinking Water",
+      "Seating Area",
+      "Scoreboard"
+    ],
     "ownerUid": "OWNER_UID_REPLACE",
     "ownerName": "Sunil Patil",
     "ownerPhone": "+91 98220 22222",
@@ -73,7 +89,8 @@ const nashikTurfs = [
   {
     "id": "nashik-turf-003",
     "name": "SportZone Nashik",
-    "description": "Multi-sport facility offering football, badminton, and basketball. Modern equipment, spacious grounds, and competitive pricing. Family-friendly environment.",
+    "description":
+        "Multi-sport facility offering football, badminton, and basketball. Modern equipment, spacious grounds, and competitive pricing. Family-friendly environment.",
     "location": "College Road, Nashik",
     "address": "Opp. K.K. Wagh College, College Road, Nashik 422005",
     "city": "Nashik",
@@ -97,7 +114,11 @@ const nashikTurfs = [
     "closeTime": "22:00",
     "slotDurationMinutes": 60,
     "numberOfGrounds": 4,
-    "sportPricing": {"Football": 600.0, "Badminton": 400.0, "Basketball": 500.0},
+    "sportPricing": {
+      "Football": 600.0,
+      "Badminton": 400.0,
+      "Basketball": 500.0
+    },
     "isVerified": true,
     "isActive": true,
     "isPopular": false,
@@ -107,7 +128,8 @@ const nashikTurfs = [
   {
     "id": "nashik-turf-004",
     "name": "RoadRunner Futsal",
-    "description": "Premium futsal (5-a-side football) with Italian sports flooring. Professional-grade facility, ideal for serious players and weekend leagues.",
+    "description":
+        "Premium futsal (5-a-side football) with Italian sports flooring. Professional-grade facility, ideal for serious players and weekend leagues.",
     "location": "Ambad, Nashik",
     "address": "MIDC Ambad Phase 2, Near Satpur Ring Road, Nashik 422010",
     "city": "Nashik",
@@ -123,7 +145,14 @@ const nashikTurfs = [
     "priceWeekday": 1000.0,
     "priceWeekend": 1300.0,
     "sports": ["Football"],
-    "amenities": ["Parking", "Floodlights", "Washroom", "Changing Room", "Drinking Water", "Referee Available"],
+    "amenities": [
+      "Parking",
+      "Floodlights",
+      "Washroom",
+      "Changing Room",
+      "Drinking Water",
+      "Referee Available"
+    ],
     "ownerUid": "OWNER_UID_REPLACE",
     "ownerName": "Vikram Shinde",
     "ownerPhone": "+91 90287 44444",
@@ -141,7 +170,8 @@ const nashikTurfs = [
   {
     "id": "nashik-turf-005",
     "name": "Badminton Supreme",
-    "description": "Dedicated badminton facility with 6 international-standard courts. Proper lighting, shuttle service available, and coaching on weekends.",
+    "description":
+        "Dedicated badminton facility with 6 international-standard courts. Proper lighting, shuttle service available, and coaching on weekends.",
     "location": "Panchavati, Nashik",
     "address": "Near Ram Kund Ghat, Panchavati, Nashik 422003",
     "city": "Nashik",
@@ -174,7 +204,8 @@ const nashikTurfs = [
   {
     "id": "nashik-turf-006",
     "name": "PlayField Nashik",
-    "description": "Affordable multi-sport complex with cricket, football, and basketball. Popular with schools and colleges. Bulk booking discounts available.",
+    "description":
+        "Affordable multi-sport complex with cricket, football, and basketball. Popular with schools and colleges. Bulk booking discounts available.",
     "location": "Dwarka, Nashik",
     "address": "Plot 7, Sector 3, Dwarka, Nashik 422011",
     "city": "Nashik",
@@ -213,7 +244,7 @@ Future<void> seedNashikTurfsAndSlots() async {
 
   for (final turfMap in nashikTurfs) {
     final turfId = turfMap['id'] as String;
-    
+
     // 1. Write the turf document
     print("Writing turf $turfId...");
     await db.collection('turfs').doc(turfId).set(turfMap);
@@ -226,20 +257,21 @@ Future<void> seedNashikTurfsAndSlots() async {
     final sports = (turfMap['sports'] as List<String>);
 
     final now = DateTime.now();
-    
+
     final List<Future> futures = [];
-    
+
     for (int dayOffset = 0; dayOffset < 30; dayOffset++) {
       final date = now.add(Duration(days: dayOffset));
-      final dateStr = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-      
+      final dateStr =
+          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+
       for (int hour = openHour; hour < closeHour; hour++) {
         final startStr = '${hour.toString().padLeft(2, '0')}:00';
         final endStr = '${(hour + 1).toString().padLeft(2, '0')}:00';
-        
+
         for (int ground = 1; ground <= numGrounds; ground++) {
           final slotId = '${dateStr}_${startStr}_G$ground';
-          
+
           final slotData = {
             "id": slotId,
             "date": dateStr,
@@ -251,14 +283,19 @@ Future<void> seedNashikTurfsAndSlots() async {
             "status": "available",
             "bookingId": null,
           };
-          
-          futures.add(db.collection('turfs').doc(turfId).collection('slots').doc(slotId).set(slotData));
+
+          futures.add(db
+              .collection('turfs')
+              .doc(turfId)
+              .collection('slots')
+              .doc(slotId)
+              .set(slotData));
         }
       }
     }
     await Future.wait(futures);
     print("✅ Seeded $turfId and 30 days of slots.");
   }
-  
+
   print("🚀 Seeding Complete!");
 }

@@ -33,11 +33,11 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     await ref.read(authNotifierProvider.notifier).signup(
-      name: _nameCtrl.text.trim(),
-      email: _emailCtrl.text.trim(),
-      password: _passwordCtrl.text,
-      phone: _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
-    );
+          name: _nameCtrl.text.trim(),
+          email: _emailCtrl.text.trim(),
+          password: _passwordCtrl.text,
+          phone: _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
+        );
     if (!mounted) return;
     final error = ref.read(authNotifierProvider).errorMessage;
     if (error != null) {
@@ -132,7 +132,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     prefixText: '+91 ',
                   ),
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'Enter your phone number';
+                    if (v == null || v.isEmpty)
+                      return 'Enter your phone number';
                     if (v.length < 10) return 'Enter a valid phone number';
                     return null;
                   },
