@@ -27,4 +27,8 @@
 - [x] 2.9 Rate limiting (@nestjs/throttler, per-identity/IP key)
 - [x] 2.10 Cursor pagination helpers (encode/decode + paginate())
 - [x] 2.11 IST time helpers
-- [ ] Phase 3 onwards
+- [x] Migration 0011 identity verification columns
+- [x] Migration 0012 device_tokens partial index scoped to is_active
+- [x] 3.1 Auth module (POST /auth/session, GET /auth/me)
+- [x] 3.2 Identity module (11 endpoints)
+- [ ] 3.3–3.21 remaining Phase 3 modules

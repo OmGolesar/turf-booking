@@ -10,6 +10,8 @@ import { OutboxModule } from './shared/outbox/outbox.module';
 import { AuditModule } from './shared/audit/audit.module';
 import { IdempotencyModule } from './shared/idempotency/idempotency.module';
 import { RateLimitModule } from './shared/rate-limit/rate-limit.module';
+import { AuthEndpointsModule } from './modules/auth/auth.module';
+import { IdentityModule } from './modules/identity/identity.module';
 
 @Controller('health')
 class HealthController {
@@ -29,6 +31,8 @@ class HealthController {
     AuditModule,
     IdempotencyModule,
     RateLimitModule,
+    AuthEndpointsModule,
+    IdentityModule,
   ],
   controllers: [HealthController],
   providers: [

@@ -219,11 +219,13 @@ model Identity {
   firebaseUid   String     @unique @map("firebase_uid")
   email         String?    @unique
   phone         String?    @unique
-  role          Role
-  status        UserStatus @default(ACTIVE)
-  lastLoginAt   DateTime?  @map("last_login_at") @db.Timestamptz(6)
-  createdAt     DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt     DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+  role            Role
+  status          UserStatus @default(ACTIVE)
+  lastLoginAt     DateTime?  @map("last_login_at") @db.Timestamptz(6)
+  phoneVerifiedAt DateTime?  @map("phone_verified_at") @db.Timestamptz(6)
+  emailVerifiedAt DateTime?  @map("email_verified_at") @db.Timestamptz(6)
+  createdAt       DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   profile         IdentityProfile?
   partner         Partner?
