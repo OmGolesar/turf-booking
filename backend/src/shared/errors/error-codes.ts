@@ -9,6 +9,17 @@ export const ErrorCode = {
   AUTH_ACCOUNT_SUSPENDED: 'AUTH_ACCOUNT_SUSPENDED',
   AUTH_IDENTITY_NOT_PROVISIONED: 'AUTH_IDENTITY_NOT_PROVISIONED',
 
+  // Identity
+  IDENTITY_PHONE_TAKEN: 'IDENTITY_PHONE_TAKEN',
+  IDENTITY_PHONE_CLAIM_MISSING: 'IDENTITY_PHONE_CLAIM_MISSING',
+  IDENTITY_NOT_CUSTOMER: 'IDENTITY_NOT_CUSTOMER',
+  IDENTITY_HAS_ACTIVE_BOOKINGS: 'IDENTITY_HAS_ACTIVE_BOOKINGS',
+  IDENTITY_NOT_FOUND: 'IDENTITY_NOT_FOUND',
+  DEVICE_ID_MISMATCH: 'DEVICE_ID_MISMATCH',
+  DEVICE_TOKEN_NOT_FOUND: 'DEVICE_TOKEN_NOT_FOUND',
+  NOTIFICATION_NOT_FOUND: 'NOTIFICATION_NOT_FOUND',
+  UPLOAD_INVALID: 'UPLOAD_INVALID',
+
   // Partner
   PARTNER_NOT_VERIFIED: 'PARTNER_NOT_VERIFIED',
   PARTNER_NOT_FOUND: 'PARTNER_NOT_FOUND',
@@ -80,6 +91,16 @@ export const ERROR_STATUS: Record<ErrorCodeKey, number> = {
   AUTH_INSUFFICIENT_PERMISSIONS: 403,
   AUTH_ACCOUNT_SUSPENDED: 403,
 
+  IDENTITY_PHONE_TAKEN: 409,
+  IDENTITY_PHONE_CLAIM_MISSING: 400,
+  IDENTITY_NOT_CUSTOMER: 404,
+  IDENTITY_HAS_ACTIVE_BOOKINGS: 409,
+  IDENTITY_NOT_FOUND: 404,
+  DEVICE_ID_MISMATCH: 409,
+  DEVICE_TOKEN_NOT_FOUND: 404,
+  NOTIFICATION_NOT_FOUND: 404,
+  UPLOAD_INVALID: 400,
+
   PARTNER_NOT_VERIFIED: 403,
   PARTNER_NOT_FOUND: 404,
 
@@ -137,6 +158,16 @@ export const ERROR_MESSAGE: Record<ErrorCodeKey, string> = {
   AUTH_IDENTITY_NOT_PROVISIONED: 'Identity has not been provisioned; call /auth/session first.',
   AUTH_INSUFFICIENT_PERMISSIONS: 'You do not have permission to perform this action.',
   AUTH_ACCOUNT_SUSPENDED: 'This account is suspended.',
+
+  IDENTITY_PHONE_TAKEN: 'This phone number is already used by another account.',
+  IDENTITY_PHONE_CLAIM_MISSING: 'Firebase token does not contain a verified phone number.',
+  IDENTITY_NOT_CUSTOMER: 'Customer reference codes are only available to customer identities.',
+  IDENTITY_HAS_ACTIVE_BOOKINGS: 'Account has confirmed future bookings; cancel them before deletion.',
+  IDENTITY_NOT_FOUND: 'Identity not found.',
+  DEVICE_ID_MISMATCH: 'Body device_id does not match the X-Device-Id header.',
+  DEVICE_TOKEN_NOT_FOUND: 'Device token not found.',
+  NOTIFICATION_NOT_FOUND: 'Notification not found.',
+  UPLOAD_INVALID: 'The upload URL is invalid or unreachable.',
 
   PARTNER_NOT_VERIFIED: 'Partner is not verified.',
   PARTNER_NOT_FOUND: 'Partner not found.',
