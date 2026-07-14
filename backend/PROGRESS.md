@@ -16,4 +16,15 @@
 - [x] 1.10 Migration 0009 — sequences + reference-code triggers
 - [x] 1.11 Migration 0010 — seed platform config
 - [x] 1.12 Prisma seed script
-- [ ] Phase 2 onwards
+- [x] 2.1 Logger + request-id (nestjs-pino, ULID X-Request-Id)
+- [x] 2.2 Response envelope interceptor
+- [x] 2.3 Error taxonomy + global exception filter
+- [x] 2.4 ValidationPipe + Money/Phone/Slug DTOs
+- [x] 2.5 Firebase Admin SDK + Auth guard + Roles/Auth/OptionalAuth decorators
+- [x] 2.6 OutboxService.emit(tx, args) with sequence_no + outside-tx guard
+- [x] 2.7 AuditService.record(tx, args)
+- [x] 2.8 Idempotency: in-memory store, service, @Idempotent() interceptor
+- [x] 2.9 Rate limiting (@nestjs/throttler, per-identity/IP key)
+- [x] 2.10 Cursor pagination helpers (encode/decode + paginate())
+- [x] 2.11 IST time helpers
+- [ ] Phase 3 onwards

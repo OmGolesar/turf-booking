@@ -1,6 +1,15 @@
 import { Module, Controller, Get } from '@nestjs/common';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { AppConfigModule } from './config/config.module';
 import { PrismaModule } from './shared/prisma/prisma.module';
+import { LoggerModule } from './shared/logger/logger.module';
+import { ResponseInterceptor } from './shared/response/response.interceptor';
+import { HttpExceptionFilter } from './shared/errors/http-exception.filter';
+import { AuthModule } from './shared/auth/auth.module';
+import { OutboxModule } from './shared/outbox/outbox.module';
+import { AuditModule } from './shared/audit/audit.module';
+import { IdempotencyModule } from './shared/idempotency/idempotency.module';
+import { RateLimitModule } from './shared/rate-limit/rate-limit.module';
 
 @Controller('health')
 class HealthController {
@@ -11,7 +20,20 @@ class HealthController {
 }
 
 @Module({
-  imports: [AppConfigModule, PrismaModule],
+  imports: [
+    LoggerModule,
+    AppConfigModule,
+    PrismaModule,
+    AuthModule,
+    OutboxModule,
+    AuditModule,
+    IdempotencyModule,
+    RateLimitModule,
+  ],
   controllers: [HealthController],
+  providers: [
+    { provide: APP_FILTER, useClass: HttpExceptionFilter },
+    { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
+  ],
 })
 export class AppModule {}

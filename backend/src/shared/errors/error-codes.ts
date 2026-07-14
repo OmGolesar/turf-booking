@@ -1,0 +1,188 @@
+// Error taxonomy per Part 3.0 §6. Add codes here as new endpoints need them.
+
+export const ErrorCode = {
+  // Auth
+  AUTH_TOKEN_MISSING: 'AUTH_TOKEN_MISSING',
+  AUTH_TOKEN_INVALID: 'AUTH_TOKEN_INVALID',
+  AUTH_TOKEN_EXPIRED: 'AUTH_TOKEN_EXPIRED',
+  AUTH_INSUFFICIENT_PERMISSIONS: 'AUTH_INSUFFICIENT_PERMISSIONS',
+  AUTH_ACCOUNT_SUSPENDED: 'AUTH_ACCOUNT_SUSPENDED',
+  AUTH_IDENTITY_NOT_PROVISIONED: 'AUTH_IDENTITY_NOT_PROVISIONED',
+
+  // Partner
+  PARTNER_NOT_VERIFIED: 'PARTNER_NOT_VERIFIED',
+  PARTNER_NOT_FOUND: 'PARTNER_NOT_FOUND',
+
+  // Venue
+  VENUE_NOT_PUBLISHED: 'VENUE_NOT_PUBLISHED',
+  VENUE_ALREADY_PUBLISHED: 'VENUE_ALREADY_PUBLISHED',
+  VENUE_NO_ACTIVE_GROUND: 'VENUE_NO_ACTIVE_GROUND',
+  VENUE_SLUG_TAKEN: 'VENUE_SLUG_TAKEN',
+  VENUE_OUTSIDE_NASHIK: 'VENUE_OUTSIDE_NASHIK',
+
+  // Ground
+  GROUND_NOT_ACTIVE: 'GROUND_NOT_ACTIVE',
+  GROUND_CONFIG_MISSING: 'GROUND_CONFIG_MISSING',
+  GROUND_NO_ACTIVE_PRICING: 'GROUND_NO_ACTIVE_PRICING',
+
+  // Scheduling
+  EXCEPTION_CONFLICTS_BOOKING: 'EXCEPTION_CONFLICTS_BOOKING',
+  MAINTENANCE_CONFLICTS_BOOKING: 'MAINTENANCE_CONFLICTS_BOOKING',
+
+  // Pricing
+  PRICING_PRIORITY_TAKEN: 'PRICING_PRIORITY_TAKEN',
+
+  // Availability
+  AVAILABILITY_NO_OPERATING_HOURS: 'AVAILABILITY_NO_OPERATING_HOURS',
+  AVAILABILITY_OUTSIDE_WINDOW: 'AVAILABILITY_OUTSIDE_WINDOW',
+
+  // Booking
+  BOOKING_SLOT_UNAVAILABLE: 'BOOKING_SLOT_UNAVAILABLE',
+  BOOKING_SESSION_EXPIRED: 'BOOKING_SESSION_EXPIRED',
+  BOOKING_SESSION_NOT_FOUND: 'BOOKING_SESSION_NOT_FOUND',
+  BOOKING_ALREADY_CONFIRMED: 'BOOKING_ALREADY_CONFIRMED',
+  BOOKING_ALREADY_CANCELLED: 'BOOKING_ALREADY_CANCELLED',
+  BOOKING_CANCELLATION_WINDOW: 'BOOKING_CANCELLATION_WINDOW',
+  BOOKING_NOT_CANCELLABLE: 'BOOKING_NOT_CANCELLABLE',
+  BOOKING_ADVANCE_WINDOW: 'BOOKING_ADVANCE_WINDOW',
+  BOOKING_MIN_NOTICE: 'BOOKING_MIN_NOTICE',
+  BOOKING_NOT_FOUND: 'BOOKING_NOT_FOUND',
+
+  // Payment
+  PAYMENT_ALREADY_CAPTURED: 'PAYMENT_ALREADY_CAPTURED',
+  PAYMENT_SIGNATURE_INVALID: 'PAYMENT_SIGNATURE_INVALID',
+  PAYMENT_AMOUNT_MISMATCH: 'PAYMENT_AMOUNT_MISMATCH',
+  PAYMENT_PROVIDER_ERROR: 'PAYMENT_PROVIDER_ERROR',
+  REFUND_INELIGIBLE: 'REFUND_INELIGIBLE',
+
+  // Idempotency
+  IDEMPOTENCY_KEY_CONFLICT: 'IDEMPOTENCY_KEY_CONFLICT',
+  IDEMPOTENCY_KEY_IN_FLIGHT: 'IDEMPOTENCY_KEY_IN_FLIGHT',
+
+  // Cross-cutting
+  VALIDATION_FAILED: 'VALIDATION_FAILED',
+  RATE_LIMIT_EXCEEDED: 'RATE_LIMIT_EXCEEDED',
+  RESOURCE_NOT_FOUND: 'RESOURCE_NOT_FOUND',
+  RESOURCE_STALE: 'RESOURCE_STALE',
+  SYSTEM_DEPENDENCY_UNAVAILABLE: 'SYSTEM_DEPENDENCY_UNAVAILABLE',
+  SYSTEM_INTERNAL_ERROR: 'SYSTEM_INTERNAL_ERROR',
+} as const;
+
+export type ErrorCodeKey = keyof typeof ErrorCode;
+
+// Maps each code to the HTTP status it MUST return (Part 3.0 §5–§6).
+// If a code isn't listed, DomainException.statusCode defaults to 400.
+export const ERROR_STATUS: Record<ErrorCodeKey, number> = {
+  AUTH_TOKEN_MISSING: 401,
+  AUTH_TOKEN_INVALID: 401,
+  AUTH_TOKEN_EXPIRED: 401,
+  AUTH_IDENTITY_NOT_PROVISIONED: 401,
+  AUTH_INSUFFICIENT_PERMISSIONS: 403,
+  AUTH_ACCOUNT_SUSPENDED: 403,
+
+  PARTNER_NOT_VERIFIED: 403,
+  PARTNER_NOT_FOUND: 404,
+
+  VENUE_NOT_PUBLISHED: 403,
+  VENUE_ALREADY_PUBLISHED: 409,
+  VENUE_NO_ACTIVE_GROUND: 409,
+  VENUE_SLUG_TAKEN: 409,
+  VENUE_OUTSIDE_NASHIK: 409,
+
+  GROUND_NOT_ACTIVE: 403,
+  GROUND_CONFIG_MISSING: 409,
+  GROUND_NO_ACTIVE_PRICING: 409,
+
+  EXCEPTION_CONFLICTS_BOOKING: 409,
+  MAINTENANCE_CONFLICTS_BOOKING: 409,
+
+  PRICING_PRIORITY_TAKEN: 409,
+
+  AVAILABILITY_NO_OPERATING_HOURS: 409,
+  AVAILABILITY_OUTSIDE_WINDOW: 409,
+
+  BOOKING_SLOT_UNAVAILABLE: 409,
+  BOOKING_SESSION_EXPIRED: 410,
+  BOOKING_SESSION_NOT_FOUND: 404,
+  BOOKING_ALREADY_CONFIRMED: 409,
+  BOOKING_ALREADY_CANCELLED: 409,
+  BOOKING_CANCELLATION_WINDOW: 409,
+  BOOKING_NOT_CANCELLABLE: 409,
+  BOOKING_ADVANCE_WINDOW: 409,
+  BOOKING_MIN_NOTICE: 409,
+  BOOKING_NOT_FOUND: 404,
+
+  PAYMENT_ALREADY_CAPTURED: 409,
+  PAYMENT_SIGNATURE_INVALID: 400,
+  PAYMENT_AMOUNT_MISMATCH: 409,
+  PAYMENT_PROVIDER_ERROR: 503,
+  REFUND_INELIGIBLE: 409,
+
+  IDEMPOTENCY_KEY_CONFLICT: 409,
+  IDEMPOTENCY_KEY_IN_FLIGHT: 409,
+
+  VALIDATION_FAILED: 400,
+  RATE_LIMIT_EXCEEDED: 429,
+  RESOURCE_NOT_FOUND: 404,
+  RESOURCE_STALE: 409,
+  SYSTEM_DEPENDENCY_UNAVAILABLE: 503,
+  SYSTEM_INTERNAL_ERROR: 500,
+};
+
+// Default human-readable message per code. Callers may override at throw-site.
+export const ERROR_MESSAGE: Record<ErrorCodeKey, string> = {
+  AUTH_TOKEN_MISSING: 'Authentication token is required.',
+  AUTH_TOKEN_INVALID: 'Authentication token is invalid.',
+  AUTH_TOKEN_EXPIRED: 'Authentication token has expired.',
+  AUTH_IDENTITY_NOT_PROVISIONED: 'Identity has not been provisioned; call /auth/session first.',
+  AUTH_INSUFFICIENT_PERMISSIONS: 'You do not have permission to perform this action.',
+  AUTH_ACCOUNT_SUSPENDED: 'This account is suspended.',
+
+  PARTNER_NOT_VERIFIED: 'Partner is not verified.',
+  PARTNER_NOT_FOUND: 'Partner not found.',
+
+  VENUE_NOT_PUBLISHED: 'Venue is not published.',
+  VENUE_ALREADY_PUBLISHED: 'Venue is already published.',
+  VENUE_NO_ACTIVE_GROUND: 'Venue must have at least one active ground before publishing.',
+  VENUE_SLUG_TAKEN: 'This venue slug is already taken.',
+  VENUE_OUTSIDE_NASHIK: 'Venue coordinates are outside the Nashik service area.',
+
+  GROUND_NOT_ACTIVE: 'Ground is not active.',
+  GROUND_CONFIG_MISSING: 'Ground configuration is required.',
+  GROUND_NO_ACTIVE_PRICING: 'Ground has no active pricing rule.',
+
+  EXCEPTION_CONFLICTS_BOOKING: 'This exception overlaps an existing booking.',
+  MAINTENANCE_CONFLICTS_BOOKING: 'Maintenance overlaps existing bookings.',
+
+  PRICING_PRIORITY_TAKEN: 'A pricing rule with this priority already exists.',
+
+  AVAILABILITY_NO_OPERATING_HOURS: 'No operating hours configured for this day.',
+  AVAILABILITY_OUTSIDE_WINDOW: 'Requested slot is outside the booking window.',
+
+  BOOKING_SLOT_UNAVAILABLE: 'The requested slot is no longer available.',
+  BOOKING_SESSION_EXPIRED: 'This booking session has expired.',
+  BOOKING_SESSION_NOT_FOUND: 'Booking session not found.',
+  BOOKING_ALREADY_CONFIRMED: 'Booking has already been confirmed.',
+  BOOKING_ALREADY_CANCELLED: 'Booking has already been cancelled.',
+  BOOKING_CANCELLATION_WINDOW: 'Cancellation is not allowed inside the notice window.',
+  BOOKING_NOT_CANCELLABLE: 'Booking cannot be cancelled in its current state.',
+  BOOKING_ADVANCE_WINDOW: 'Booking is beyond the allowed advance window.',
+  BOOKING_MIN_NOTICE: 'Booking does not meet the minimum notice window.',
+  BOOKING_NOT_FOUND: 'Booking not found.',
+
+  PAYMENT_ALREADY_CAPTURED: 'Payment has already been captured.',
+  PAYMENT_SIGNATURE_INVALID: 'Payment signature is invalid.',
+  PAYMENT_AMOUNT_MISMATCH: 'Payment amount does not match the booking total.',
+  PAYMENT_PROVIDER_ERROR: 'Payment provider returned an error.',
+  REFUND_INELIGIBLE: 'This booking is not eligible for a refund.',
+
+  IDEMPOTENCY_KEY_CONFLICT: 'Idempotency key was reused with a different request body.',
+  IDEMPOTENCY_KEY_IN_FLIGHT: 'A request with this idempotency key is already in flight.',
+
+  VALIDATION_FAILED: 'One or more fields failed validation.',
+  RATE_LIMIT_EXCEEDED: 'Rate limit exceeded. Please retry later.',
+  RESOURCE_NOT_FOUND: 'Requested resource was not found.',
+  RESOURCE_STALE: 'This resource has been updated since you last read it.',
+  SYSTEM_DEPENDENCY_UNAVAILABLE: 'A required upstream service is unavailable.',
+  SYSTEM_INTERNAL_ERROR: 'Internal server error.',
+};
