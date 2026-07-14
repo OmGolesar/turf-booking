@@ -12,6 +12,12 @@ import { IdempotencyModule } from './shared/idempotency/idempotency.module';
 import { RateLimitModule } from './shared/rate-limit/rate-limit.module';
 import { AuthEndpointsModule } from './modules/auth/auth.module';
 import { IdentityModule } from './modules/identity/identity.module';
+import { PartnerModule } from './modules/partner/partner.module';
+import { VenueModule } from './modules/venue/venue.module';
+import { GroundModule } from './modules/ground/ground.module';
+import { SchedulingModule } from './modules/scheduling/scheduling.module';
+import { PricingModule } from './modules/pricing/pricing.module';
+import { SportsModule } from './modules/sports/sports.module';
 
 @Controller('health')
 class HealthController {
@@ -33,6 +39,12 @@ class HealthController {
     RateLimitModule,
     AuthEndpointsModule,
     IdentityModule,
+    PartnerModule,
+    VenueModule,
+    GroundModule,
+    SchedulingModule,
+    PricingModule,
+    SportsModule,
   ],
   controllers: [HealthController],
   providers: [
