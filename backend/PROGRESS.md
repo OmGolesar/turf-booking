@@ -31,4 +31,9 @@
 - [x] Migration 0012 device_tokens partial index scoped to is_active
 - [x] 3.1 Auth module (POST /auth/session, GET /auth/me)
 - [x] 3.2 Identity module (11 endpoints)
-- [ ] 3.3–3.21 remaining Phase 3 modules
+- [x] 3.3 Partner module (create/me/update/submit-for-review/dashboard)
+- [x] 3.4 Venue module (CRUD + submit/suspend/archive + media)
+- [x] 3.5 Ground module (CRUD + configuration + activate/maintenance/resume/archive + media)
+- [x] 3.6 Scheduling module (operating-hours + exceptions + maintenance-blocks)
+- [x] 3.7 Pricing module + GET /sports (sample_pricing preview included)
+- [ ] 3.8–3.21 remaining Phase 3 (uploads, availability, discovery, bookings, webhook, support)
