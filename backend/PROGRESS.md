@@ -36,4 +36,8 @@
 - [x] 3.5 Ground module (CRUD + configuration + activate/maintenance/resume/archive + media)
 - [x] 3.6 Scheduling module (operating-hours + exceptions + maintenance-blocks)
 - [x] 3.7 Pricing module + GET /sports (sample_pricing preview included)
-- [ ] 3.8–3.21 remaining Phase 3 (uploads, availability, discovery, bookings, webhook, support)
+- [x] Migration 0013 customer_favourites + FTS on venues (tsvector + GIN)
+- [x] 3.8 Upload module (POST /uploads/sign — Supabase signed URLs)
+- [x] 3.9 Availability slot generator (pure fn) + 30s in-memory cache
+- [x] 3.10 Discovery (browse/search/geo/venue detail/reviews/featured/near-me) + /customers/me (favourites + bookings read)
+- [ ] 3.11–3.21 remaining Phase 3 (bookings + webhooks + support)

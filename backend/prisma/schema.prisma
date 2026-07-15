@@ -235,6 +235,7 @@ model Identity {
   deviceTokens    DeviceToken[]
   notifications   Notification[]
   auditLogs       AuditLog[]
+  favourites      CustomerFavourite[]
 
   @@index([role, status])
   @@map("identities")
@@ -327,11 +328,12 @@ model Venue {
   deletedBy String?   @map("deleted_by") @db.Uuid
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  partner  Partner      @relation(fields: [partnerId], references: [id])
-  grounds  Ground[]
-  media    VenueMedia[]
-  reviews  Review[]
-  bookings Booking[]
+  partner    Partner             @relation(fields: [partnerId], references: [id])
+  grounds    Ground[]
+  media      VenueMedia[]
+  reviews    Review[]
+  bookings   Booking[]
+  favourites CustomerFavourite[]
 
   @@index([partnerId])
   @@index([city, status])
@@ -775,6 +777,21 @@ model AppSetting {
   partner Partner? @relation(fields: [partnerId], references: [id])
 
   @@map("app_settings")
+}
+
+// Simple join table backing /customers/me/favourites (Part 3.3 §12).
+model CustomerFavourite {
+  identityId String   @map("identity_id") @db.Uuid
+  venueId    String   @map("venue_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  identity Identity @relation(fields: [identityId], references: [id])
+  venue    Venue    @relation(fields: [venueId], references: [id])
+
+  @@id([identityId, venueId])
+  @@index([identityId, createdAt(sort: Desc)])
+  @@index([venueId])
+  @@map("customer_favourites")
 }
 
 model BackgroundJob {
