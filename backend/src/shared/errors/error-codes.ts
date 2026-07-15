@@ -82,6 +82,9 @@ export const ErrorCode = {
   BOOKING_ADVANCE_WINDOW: 'BOOKING_ADVANCE_WINDOW',
   BOOKING_MIN_NOTICE: 'BOOKING_MIN_NOTICE',
   BOOKING_NOT_FOUND: 'BOOKING_NOT_FOUND',
+  IDENTITY_PHONE_NOT_VERIFIED: 'IDENTITY_PHONE_NOT_VERIFIED',
+  PAYMENT_NOT_CAPTURED: 'PAYMENT_NOT_CAPTURED',
+  BOOKING_SESSION_ALREADY_CANCELLED: 'BOOKING_SESSION_ALREADY_CANCELLED',
 
   // Payment
   PAYMENT_ALREADY_CAPTURED: 'PAYMENT_ALREADY_CAPTURED',
@@ -180,6 +183,9 @@ export const ERROR_STATUS: Record<ErrorCodeKey, number> = {
   BOOKING_ADVANCE_WINDOW: 409,
   BOOKING_MIN_NOTICE: 409,
   BOOKING_NOT_FOUND: 404,
+  IDENTITY_PHONE_NOT_VERIFIED: 403,
+  PAYMENT_NOT_CAPTURED: 409,
+  BOOKING_SESSION_ALREADY_CANCELLED: 409,
 
   PAYMENT_ALREADY_CAPTURED: 409,
   PAYMENT_SIGNATURE_INVALID: 400,
@@ -272,6 +278,9 @@ export const ERROR_MESSAGE: Record<ErrorCodeKey, string> = {
   BOOKING_ADVANCE_WINDOW: 'Booking is beyond the allowed advance window.',
   BOOKING_MIN_NOTICE: 'Booking does not meet the minimum notice window.',
   BOOKING_NOT_FOUND: 'Booking not found.',
+  IDENTITY_PHONE_NOT_VERIFIED: 'Phone must be verified before booking.',
+  PAYMENT_NOT_CAPTURED: 'Payment has not been captured yet.',
+  BOOKING_SESSION_ALREADY_CANCELLED: 'This booking session has already been cancelled.',
 
   PAYMENT_ALREADY_CAPTURED: 'Payment has already been captured.',
   PAYMENT_SIGNATURE_INVALID: 'Payment signature is invalid.',

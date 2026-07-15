@@ -22,6 +22,8 @@ import { UploadModule } from './modules/upload/upload.module';
 import { AvailabilityModule } from './modules/availability/availability.module';
 import { DiscoveryModule } from './modules/discovery/discovery.module';
 import { CustomersModule } from './modules/customers/customers.module';
+import { RazorpayModule } from './shared/razorpay/razorpay.module';
+import { BookingModule } from './modules/booking/booking.module';
 
 @Controller('health')
 class HealthController {
@@ -53,6 +55,8 @@ class HealthController {
     AvailabilityModule,
     DiscoveryModule,
     CustomersModule,
+    RazorpayModule,
+    BookingModule,
   ],
   controllers: [HealthController],
   providers: [
