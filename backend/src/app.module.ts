@@ -18,6 +18,10 @@ import { GroundModule } from './modules/ground/ground.module';
 import { SchedulingModule } from './modules/scheduling/scheduling.module';
 import { PricingModule } from './modules/pricing/pricing.module';
 import { SportsModule } from './modules/sports/sports.module';
+import { UploadModule } from './modules/upload/upload.module';
+import { AvailabilityModule } from './modules/availability/availability.module';
+import { DiscoveryModule } from './modules/discovery/discovery.module';
+import { CustomersModule } from './modules/customers/customers.module';
 
 @Controller('health')
 class HealthController {
@@ -45,6 +49,10 @@ class HealthController {
     SchedulingModule,
     PricingModule,
     SportsModule,
+    UploadModule,
+    AvailabilityModule,
+    DiscoveryModule,
+    CustomersModule,
   ],
   controllers: [HealthController],
   providers: [
