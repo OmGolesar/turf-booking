@@ -40,4 +40,10 @@
 - [x] 3.8 Upload module (POST /uploads/sign — Supabase signed URLs)
 - [x] 3.9 Availability slot generator (pure fn) + 30s in-memory cache
 - [x] 3.10 Discovery (browse/search/geo/venue detail/reviews/featured/near-me) + /customers/me (favourites + bookings read)
-- [ ] 3.11–3.21 remaining Phase 3 (bookings + webhooks + support)
+- [x] Migration 0014 correlation_id widened to VARCHAR(64) so ULIDs fit
+- [x] Razorpay shared client (create-order/fetch-payment/refund/verifySignature)
+- [x] 3.11 Booking session create/get/cancel with partial-unique concurrency guard
+- [x] 3.12 Confirm booking (signature verify + payments.fetch cross-check + atomic promote)
+- [x] 3.13 Cancel + refund (Razorpay refund in same tx) + GET /bookings/:idOrRef
+- [x] 3.14 Offline (walk-in) booking with resolve-or-create identity by phone
+- [ ] 3.15–3.21 remaining Phase 3 (partner state transitions, reviews, webhook, support)
