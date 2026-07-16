@@ -9,6 +9,10 @@ import { __internals as support } from '../src/modules/support/support.service';
 import { __internals as platform } from '../src/modules/platform/platform.service';
 import { __internals as webhook } from '../src/modules/webhook/razorpay.controller';
 import { __internals as jobs } from '../src/modules/background-jobs/job-runner.service';
+import { __internals as outbox } from '../src/modules/background-jobs/jobs/publish-outbox.job';
+import { __internals as dispatch } from '../src/modules/background-jobs/jobs/dispatch-notifications.job';
+import { __internals as notifSub } from '../src/modules/background-jobs/subscribers/notification.subscriber';
+import { NotificationCategory, NotificationChannel } from '@prisma/client';
 
 // 1. Notification prefs: LOCKED_ON channels stay true even if stored says false.
 {
@@ -73,6 +77,36 @@ import { __internals as jobs } from '../src/modules/background-jobs/job-runner.s
   assert.ok(next instanceof Date && next.getTime() > Date.now() - 1000, 'valid cron yields a near-future date');
   const daily = jobs.computeNextRunAt('0 3 * * *');
   assert.ok(daily instanceof Date && daily.getTime() > Date.now(), 'daily cron yields a future date');
+}
+
+// 6. Outbox backoff: monotonic, capped at 30 min.
+{
+  assert.equal(outbox.computeBackoffMs(1), 30_000, 'first retry = 30s');
+  assert.equal(outbox.computeBackoffMs(2), 60_000, 'second retry = 60s');
+  assert.equal(outbox.computeBackoffMs(3), 120_000, 'third retry = 2m');
+  assert.equal(outbox.computeBackoffMs(4), 240_000, 'fourth retry = 4m');
+  assert.equal(outbox.computeBackoffMs(7), 30 * 60_000, 'seventh retry capped at 30m');
+  assert.equal(outbox.computeBackoffMs(100), 30 * 60_000, 'huge attempts still capped');
+}
+
+// 7. Notification prefs vs LOCKED_ON:
+{
+  const prefs = { BOOKING_CONFIRMATION: { push: false, sms: false, email: false, in_app: false } };
+  // Push for BOOKING_CONFIRMATION is locked-on — always allowed.
+  assert.ok(
+    notifSub.channelAllowed(NotificationCategory.BOOKING_CONFIRMATION, NotificationChannel.PUSH, prefs),
+    'locked-on push bypasses opt-out',
+  );
+  // SMS for BOOKING_CONFIRMATION is NOT locked, and user disabled it — denied.
+  assert.ok(
+    !notifSub.channelAllowed(NotificationCategory.BOOKING_CONFIRMATION, NotificationChannel.SMS, prefs),
+    'non-locked channel respects opt-out',
+  );
+  // Dispatch's copy of LOCKED_ON should match (defence in depth).
+  assert.ok(
+    dispatch.channelAllowed(NotificationCategory.PAYMENT_SUCCESS, NotificationChannel.EMAIL, { PAYMENT_SUCCESS: { email: false } }),
+    'dispatch: payment_success.email locked-on bypasses opt-out',
+  );
 }
 
 console.log('slice-f-check: OK');

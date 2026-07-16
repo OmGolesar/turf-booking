@@ -39,6 +39,12 @@ export class NotificationService {
     return { preferences: mergeWithDefaults(stored) };
   }
 
+  // Worker-facing: return the merged prefs for a bare identity id (no ctx).
+  async getPreferencesForIdentity(identityId: string): Promise<Record<string, Record<string, boolean>>> {
+    const stored = await this.readStored(identityId);
+    return mergeWithDefaults(stored);
+  }
+
   async updatePreferences(ctx: AuthContext, patch: Record<string, Record<string, boolean>>) {
     const stored = await this.readStored(ctx.identityId);
     const merged = mergeWithDefaults(stored);

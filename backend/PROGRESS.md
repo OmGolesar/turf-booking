@@ -51,3 +51,8 @@
 - [x] 3.17–3.21 Phase 3 tail (customer bookings read, reviews, webhook, notifications, support/platform)
 - [x] 4.1 Background worker: entrypoint + scheduler + runner with `background_jobs` locking; api+worker services in docker-compose
 - [x] 4.2 Job: `ExpireBookingSessions` (per-row FOR UPDATE re-check + `BookingSessionExpired` outbox + SYSTEM audit + availability cache invalidation)
+- [x] 4.3 Job: `PublishOutbox` (FOR UPDATE SKIP LOCKED batch of 100 + subscriber registry + exp. backoff capped at 30min + attempts≥10→FAILED); subscribers: `NotificationCreator` (Part 3.4 §18 channel matrix + prefs + locked-on bypass) + `CacheInvalidator` (Booking/BookingSession events)
+- [x] 4.4 Job: `DispatchNotifications` + providers (FCM/MSG91/SendGrid/InApp) — user prefs re-check, FCM UNREGISTERED→deactivate token, push→SMS fallback after 3 attempts for critical categories
+- [x] 4.5 Job: `SendBookingReminders` — T-2h in IST, idempotent via NOT EXISTS on `BOOKING_REMINDER` per booking
+- [x] 4.6 Jobs: `RecalculateVenueRatings` (touch-only venues with recent reviews) + `ArchivePublishedOutbox` (delete PUBLISHED older than 30 days, batched) + `PurgeInactiveDeviceTokens` (30-day inactive) + `VerifyPaymentReconciliation` (Razorpay `payments.fetch` cross-check; throws on mismatch to bump `failure_count`)
+- [x] Phase 4 complete — 8 registered handlers, 2 outbox subscribers, 4 notification providers
