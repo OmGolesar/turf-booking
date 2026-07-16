@@ -1,0 +1,67 @@
+// Slice F pure-function self-checks. Run: `npx ts-node scripts/slice-f-check.ts`.
+// One assertion per branch that would silently break if the logic drifted.
+// Not a framework — just asserts. Task 5.1 will bring proper jest scaffolding.
+/* eslint-disable no-console */
+import assert from 'node:assert/strict';
+
+import { __internals as notif } from '../src/modules/notification/notification.service';
+import { __internals as support } from '../src/modules/support/support.service';
+import { __internals as platform } from '../src/modules/platform/platform.service';
+import { __internals as webhook } from '../src/modules/webhook/razorpay.controller';
+
+// 1. Notification prefs: LOCKED_ON channels stay true even if stored says false.
+{
+  const merged = notif.mergeWithDefaults({
+    BOOKING_CONFIRMATION: { push: false }, // spec: cannot opt out
+    PROMOTION: { push: true }, // free to override
+  });
+  assert.equal(merged.BOOKING_CONFIRMATION.push, true, 'locked push must stay true');
+  assert.equal(merged.PAYMENT_SUCCESS.email, true, 'locked email must stay true');
+  assert.equal(merged.REFUND_PROCESSED.sms, true, 'locked sms must stay true');
+  assert.equal(merged.PROMOTION.push, true, 'non-locked override wins');
+  assert.equal(merged.BOOKING_REMINDER.email, false, 'default retained when absent');
+}
+
+// 2. Support code regex: accepts every documented prefix, rejects malformed.
+{
+  for (const c of ['TX-PT-00001', 'TX-VN-2026-ABCD', 'TX-GR-XYZ', 'TX-BK-20260716000001', 'TX-PY-20260716000001', 'TX-CS-00042']) {
+    assert.ok(support.CODE_RE.test(c), `expected match: ${c}`);
+  }
+  for (const c of ['tx-bk-1', 'TX-XX-1', 'TX-BK-', 'BK-00001', 'random string']) {
+    assert.ok(!support.CODE_RE.test(c), `expected no match: ${c}`);
+  }
+}
+
+// 3. Semver comparator: signs correct across major/minor/patch and pre-release.
+{
+  assert.ok(platform.cmp('1.0.0', '1.0.0') === 0, 'equal');
+  assert.ok(platform.cmp('1.0.0', '1.0.1') < 0, 'patch below');
+  assert.ok(platform.cmp('1.1.0', '1.0.9') > 0, 'minor above patch');
+  assert.ok(platform.cmp('2.0.0', '1.9.9') > 0, 'major above minor');
+  assert.ok(platform.cmp('1.2.3-beta', '1.2.3') === 0, 'pre-release ignored');
+}
+
+// 4. Webhook event-id extraction: real id used verbatim, else synthetic id
+// stays stable across identical payloads (dedup lever).
+{
+  const withId = webhook.extractEventId({ id: 'evt_ABC', event: 'payment.captured' });
+  assert.equal(withId, 'evt_ABC', 'real id used verbatim');
+
+  const noId1 = webhook.extractEventId({
+    event: 'payment.captured',
+    created_at: 1737123456,
+    payload: { payment: { entity: { id: 'pay_xyz' } } },
+  });
+  const noId2 = webhook.extractEventId({
+    event: 'payment.captured',
+    created_at: 1737123456,
+    payload: { payment: { entity: { id: 'pay_xyz' } } },
+  });
+  assert.equal(noId1, noId2, 'synthetic id is deterministic for identical payloads');
+  assert.ok(noId1.startsWith('synth:payment.captured:'), 'synthetic id has expected shape');
+
+  const diff = webhook.extractEventId({ event: 'payment.captured', created_at: 999, payload: { payment: { entity: { id: 'pay_xyz' } } } });
+  assert.notEqual(noId1, diff, 'different created_at yields different synthetic id');
+}
+
+console.log('slice-f-check: OK');
