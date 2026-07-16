@@ -8,6 +8,7 @@ import { __internals as notif } from '../src/modules/notification/notification.s
 import { __internals as support } from '../src/modules/support/support.service';
 import { __internals as platform } from '../src/modules/platform/platform.service';
 import { __internals as webhook } from '../src/modules/webhook/razorpay.controller';
+import { __internals as jobs } from '../src/modules/background-jobs/job-runner.service';
 
 // 1. Notification prefs: LOCKED_ON channels stay true even if stored says false.
 {
@@ -62,6 +63,16 @@ import { __internals as webhook } from '../src/modules/webhook/razorpay.controll
 
   const diff = webhook.extractEventId({ event: 'payment.captured', created_at: 999, payload: { payment: { entity: { id: 'pay_xyz' } } } });
   assert.notEqual(noId1, diff, 'different created_at yields different synthetic id');
+}
+
+// 5. Cron next-run: returns null for null/invalid; monotonic future for valid.
+{
+  assert.equal(jobs.computeNextRunAt(null), null, 'null cron → null');
+  assert.equal(jobs.computeNextRunAt('not a cron'), null, 'invalid cron → null');
+  const next = jobs.computeNextRunAt('*/1 * * * *');
+  assert.ok(next instanceof Date && next.getTime() > Date.now() - 1000, 'valid cron yields a near-future date');
+  const daily = jobs.computeNextRunAt('0 3 * * *');
+  assert.ok(daily instanceof Date && daily.getTime() > Date.now(), 'daily cron yields a future date');
 }
 
 console.log('slice-f-check: OK');

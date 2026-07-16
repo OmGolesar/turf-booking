@@ -22,5 +22,26 @@ services:
     container_name: turfx_redis
     ports: ["6379:6379"]
 
+  api:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    ports: ["3000:3000"]
+    env_file: .env
+    command: node dist/main.js
+
+  worker:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    env_file: .env
+    command: node dist/worker.main.js
+
 volumes:
   pgdata:
