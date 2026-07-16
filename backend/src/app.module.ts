@@ -24,6 +24,11 @@ import { DiscoveryModule } from './modules/discovery/discovery.module';
 import { CustomersModule } from './modules/customers/customers.module';
 import { RazorpayModule } from './shared/razorpay/razorpay.module';
 import { BookingModule } from './modules/booking/booking.module';
+import { ReviewModule } from './modules/review/review.module';
+import { NotificationModule } from './modules/notification/notification.module';
+import { SupportModule } from './modules/support/support.module';
+import { PlatformModule } from './modules/platform/platform.module';
+import { WebhookModule } from './modules/webhook/webhook.module';
 
 @Controller('health')
 class HealthController {
@@ -57,6 +62,11 @@ class HealthController {
     CustomersModule,
     RazorpayModule,
     BookingModule,
+    ReviewModule,
+    NotificationModule,
+    SupportModule,
+    PlatformModule,
+    WebhookModule,
   ],
   controllers: [HealthController],
   providers: [

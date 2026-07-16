@@ -90,6 +90,19 @@ export const ErrorCode = {
   BOOKING_NO_SHOW_WINDOW: 'BOOKING_NO_SHOW_WINDOW',
   CALENDAR_RANGE_INVALID: 'CALENDAR_RANGE_INVALID',
 
+  // Review
+  REVIEW_ALREADY_EXISTS: 'REVIEW_ALREADY_EXISTS',
+  REVIEW_BOOKING_NOT_COMPLETED: 'REVIEW_BOOKING_NOT_COMPLETED',
+  REVIEW_RATING_OUT_OF_RANGE: 'REVIEW_RATING_OUT_OF_RANGE',
+
+  // Support / Platform
+  SUPPORT_CODE_NOT_FOUND: 'SUPPORT_CODE_NOT_FOUND',
+  SUPPORT_CODE_INVALID: 'SUPPORT_CODE_INVALID',
+  PLATFORM_VERSION_INVALID: 'PLATFORM_VERSION_INVALID',
+
+  // Webhook
+  WEBHOOK_SIGNATURE_INVALID: 'WEBHOOK_SIGNATURE_INVALID',
+
   // Payment
   PAYMENT_ALREADY_CAPTURED: 'PAYMENT_ALREADY_CAPTURED',
   PAYMENT_SIGNATURE_INVALID: 'PAYMENT_SIGNATURE_INVALID',
@@ -195,6 +208,16 @@ export const ERROR_STATUS: Record<ErrorCodeKey, number> = {
   BOOKING_NO_SHOW_WINDOW: 409,
   CALENDAR_RANGE_INVALID: 400,
 
+  REVIEW_ALREADY_EXISTS: 409,
+  REVIEW_BOOKING_NOT_COMPLETED: 409,
+  REVIEW_RATING_OUT_OF_RANGE: 400,
+
+  SUPPORT_CODE_NOT_FOUND: 404,
+  SUPPORT_CODE_INVALID: 400,
+  PLATFORM_VERSION_INVALID: 400,
+
+  WEBHOOK_SIGNATURE_INVALID: 400,
+
   PAYMENT_ALREADY_CAPTURED: 409,
   PAYMENT_SIGNATURE_INVALID: 400,
   PAYMENT_AMOUNT_MISMATCH: 409,
@@ -293,6 +316,16 @@ export const ERROR_MESSAGE: Record<ErrorCodeKey, string> = {
   BOOKING_CHECK_IN_WINDOW: 'Check-in is only allowed within 30 min before start until end of slot.',
   BOOKING_NO_SHOW_WINDOW: 'Mark-no-show is only allowed 30 min after start time.',
   CALENDAR_RANGE_INVALID: 'Calendar range must be a valid date span of 1–31 days.',
+
+  REVIEW_ALREADY_EXISTS: 'This booking already has a review.',
+  REVIEW_BOOKING_NOT_COMPLETED: 'Reviews are only allowed for completed bookings.',
+  REVIEW_RATING_OUT_OF_RANGE: 'Rating must be an integer between 1 and 5.',
+
+  SUPPORT_CODE_NOT_FOUND: 'No resource matches that reference code.',
+  SUPPORT_CODE_INVALID: 'Reference code does not match a supported prefix.',
+  PLATFORM_VERSION_INVALID: 'Version query is missing or malformed.',
+
+  WEBHOOK_SIGNATURE_INVALID: 'Webhook signature is invalid.',
 
   PAYMENT_ALREADY_CAPTURED: 'Payment has already been captured.',
   PAYMENT_SIGNATURE_INVALID: 'Payment signature is invalid.',

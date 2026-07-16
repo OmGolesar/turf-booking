@@ -6,7 +6,9 @@ import { ValidationPipe } from './shared/validation/validation.pipe';
 import type { AppConfig } from './config/configuration';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  // rawBody: true — needed for Razorpay webhook signature verification against
+  // the un-parsed request body. Everything else still uses the JSON parser.
+  const app = await NestFactory.create(AppModule, { bufferLogs: true, rawBody: true });
   app.useLogger(app.get(PinoLogger));
 
   app.setGlobalPrefix('v1', { exclude: ['health'] });
