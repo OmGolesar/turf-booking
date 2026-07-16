@@ -50,3 +50,4 @@
 - [x] 3.16 Partner bookings read + calendar (`GET /partners/me/bookings`, `GET /partners/me/calendar`)
 - [x] 3.17–3.21 Phase 3 tail (customer bookings read, reviews, webhook, notifications, support/platform)
 - [x] 4.1 Background worker: entrypoint + scheduler + runner with `background_jobs` locking; api+worker services in docker-compose
+- [x] 4.2 Job: `ExpireBookingSessions` (per-row FOR UPDATE re-check + `BookingSessionExpired` outbox + SYSTEM audit + availability cache invalidation)
