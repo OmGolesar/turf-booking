@@ -85,6 +85,10 @@ export const ErrorCode = {
   IDENTITY_PHONE_NOT_VERIFIED: 'IDENTITY_PHONE_NOT_VERIFIED',
   PAYMENT_NOT_CAPTURED: 'PAYMENT_NOT_CAPTURED',
   BOOKING_SESSION_ALREADY_CANCELLED: 'BOOKING_SESSION_ALREADY_CANCELLED',
+  BOOKING_INVALID_STATE: 'BOOKING_INVALID_STATE',
+  BOOKING_CHECK_IN_WINDOW: 'BOOKING_CHECK_IN_WINDOW',
+  BOOKING_NO_SHOW_WINDOW: 'BOOKING_NO_SHOW_WINDOW',
+  CALENDAR_RANGE_INVALID: 'CALENDAR_RANGE_INVALID',
 
   // Payment
   PAYMENT_ALREADY_CAPTURED: 'PAYMENT_ALREADY_CAPTURED',
@@ -186,6 +190,10 @@ export const ERROR_STATUS: Record<ErrorCodeKey, number> = {
   IDENTITY_PHONE_NOT_VERIFIED: 403,
   PAYMENT_NOT_CAPTURED: 409,
   BOOKING_SESSION_ALREADY_CANCELLED: 409,
+  BOOKING_INVALID_STATE: 409,
+  BOOKING_CHECK_IN_WINDOW: 409,
+  BOOKING_NO_SHOW_WINDOW: 409,
+  CALENDAR_RANGE_INVALID: 400,
 
   PAYMENT_ALREADY_CAPTURED: 409,
   PAYMENT_SIGNATURE_INVALID: 400,
@@ -281,6 +289,10 @@ export const ERROR_MESSAGE: Record<ErrorCodeKey, string> = {
   IDENTITY_PHONE_NOT_VERIFIED: 'Phone must be verified before booking.',
   PAYMENT_NOT_CAPTURED: 'Payment has not been captured yet.',
   BOOKING_SESSION_ALREADY_CANCELLED: 'This booking session has already been cancelled.',
+  BOOKING_INVALID_STATE: 'Booking is not in a state that allows this action.',
+  BOOKING_CHECK_IN_WINDOW: 'Check-in is only allowed within 30 min before start until end of slot.',
+  BOOKING_NO_SHOW_WINDOW: 'Mark-no-show is only allowed 30 min after start time.',
+  CALENDAR_RANGE_INVALID: 'Calendar range must be a valid date span of 1–31 days.',
 
   PAYMENT_ALREADY_CAPTURED: 'Payment has already been captured.',
   PAYMENT_SIGNATURE_INVALID: 'Payment signature is invalid.',

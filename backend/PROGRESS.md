@@ -46,4 +46,6 @@
 - [x] 3.12 Confirm booking (signature verify + payments.fetch cross-check + atomic promote)
 - [x] 3.13 Cancel + refund (Razorpay refund in same tx) + GET /bookings/:idOrRef
 - [x] 3.14 Offline (walk-in) booking with resolve-or-create identity by phone
-- [ ] 3.15–3.21 remaining Phase 3 (partner state transitions, reviews, webhook, support)
+- [x] 3.15 Partner-side state transitions (check-in / complete / mark-no-show / partner-cancel)
+- [x] 3.16 Partner bookings read + calendar (`GET /partners/me/bookings`, `GET /partners/me/calendar`)
+- [ ] 3.17–3.21 remaining Phase 3 (customer bookings read, reviews, webhook, support)
