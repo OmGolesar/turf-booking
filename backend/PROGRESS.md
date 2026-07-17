@@ -56,3 +56,4 @@
 - [x] 4.5 Job: `SendBookingReminders` — T-2h in IST, idempotent via NOT EXISTS on `BOOKING_REMINDER` per booking
 - [x] 4.6 Jobs: `RecalculateVenueRatings` (touch-only venues with recent reviews) + `ArchivePublishedOutbox` (delete PUBLISHED older than 30 days, batched) + `PurgeInactiveDeviceTokens` (30-day inactive) + `VerifyPaymentReconciliation` (Razorpay `payments.fetch` cross-check; throws on mismatch to bump `failure_count`)
 - [x] Phase 4 complete — 8 registered handlers, 2 outbox subscribers, 4 notification providers
+- [x] 5.1 Unit test scaffold — jest + ts-jest, `test:unit`/`test:cov` scripts, co-located `*.spec.ts`; 10 tests green for IST helpers + cursor round-trip
