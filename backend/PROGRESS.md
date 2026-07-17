@@ -57,3 +57,4 @@
 - [x] 4.6 Jobs: `RecalculateVenueRatings` (touch-only venues with recent reviews) + `ArchivePublishedOutbox` (delete PUBLISHED older than 30 days, batched) + `PurgeInactiveDeviceTokens` (30-day inactive) + `VerifyPaymentReconciliation` (Razorpay `payments.fetch` cross-check; throws on mismatch to bump `failure_count`)
 - [x] Phase 4 complete — 8 registered handlers, 2 outbox subscribers, 4 notification providers
 - [x] 5.1 Unit test scaffold — jest + ts-jest, `test:unit`/`test:cov` scripts, co-located `*.spec.ts`; 10 tests green for IST helpers + cursor round-trip
+- [x] 5.2 Integration test harness — testcontainers `postgis/postgis:17-3.4`, per-suite container, `prisma migrate deploy` + `prisma/seed.ts` at boot; `truncateAll()` uses TRUNCATE CASCADE + reference-table snapshot restore (sports/app_settings/background_jobs); Colima socket auto-detect. `npm run test:integration` boots container + runs 4 smoke tests in ~18s.
