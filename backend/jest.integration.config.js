@@ -5,7 +5,10 @@ module.exports = {
   testEnvironment: 'node',
   transform: { '^.+\\.ts$': ['ts-jest', { tsconfig: 'tsconfig.json' }] },
   moduleNameMapper: { '^@/(.*)$': '<rootDir>/src/$1' },
-  testMatch: ['<rootDir>/test/integration/**/*.spec.ts'],
+  testMatch: [
+    '<rootDir>/test/integration/**/*.spec.ts',
+    '<rootDir>/test/e2e/**/*.spec.ts',
+  ],
   // Container boot + migrate + seed can take 30–60s on a cold pull.
   testTimeout: 180_000,
   // Force sequential execution: each spec file starts its own container, and
