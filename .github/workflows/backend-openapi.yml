@@ -1,0 +1,50 @@
+# Backend — OpenAPI spec drift check.
+#
+# Fails the PR if `backend/openapi.json` is out of date vs the current
+# controllers/DTOs. Regenerates the spec (via `nest build` + the
+# @nestjs/swagger CLI plugin) and diffs it against the committed file.
+# Fix locally with `cd backend && npm run openapi:generate` and commit
+# the result.
+#
+# Deliberately scoped to backend-only changes so unrelated Flutter PRs
+# don't pay the ~30s build cost. Task 6.1 will subsume this into the
+# full backend CI workflow (lint + build + unit + integration).
+
+name: Backend OpenAPI
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-openapi.yml"
+
+concurrency:
+  group: backend-openapi-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  openapi-check:
+    name: openapi.json drift check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Prisma generate
+        # Nest build imports @prisma/client; generate the client so types resolve.
+        run: npx prisma generate
+
+      - name: OpenAPI drift check
+        run: npm run openapi:check

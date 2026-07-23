@@ -20,13 +20,16 @@
     "test:unit": "jest",
     "test:cov": "jest --coverage",
     "test:watch": "jest --watch",
-    "test:integration": "jest --config jest.integration.config.js --runInBand"
+    "test:integration": "jest --config jest.integration.config.js --runInBand",
+    "openapi:generate": "nest build && ts-node -T scripts/generate-openapi.ts generate",
+    "openapi:check": "nest build && ts-node -T scripts/generate-openapi.ts check"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.10",
     "@nestjs/config": "^3.2.3",
     "@nestjs/core": "^10.3.10",
     "@nestjs/platform-express": "^10.3.10",
+    "@nestjs/swagger": "^7.4.2",
     "@nestjs/throttler": "^6.5.0",
     "@prisma/client": "^5.19.1",
     "@supabase/supabase-js": "^2.110.5",
