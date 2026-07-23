@@ -1,0 +1,3517 @@
+{
+  "components": {
+    "schemas": {
+      "AttachGroundMediaDto": {
+        "properties": {
+          "display_order": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "file_url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "file_url"
+        ],
+        "type": "object"
+      },
+      "AttachVenueMediaDto": {
+        "properties": {
+          "display_order": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "file_url": {
+            "type": "string"
+          },
+          "media_type": {
+            "enum": [
+              "COVER",
+              "GALLERY",
+              "LOGO"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "file_url",
+          "media_type"
+        ],
+        "type": "object"
+      },
+      "AuthSessionDto": {
+        "properties": {
+          "intended_role": {
+            "enum": [
+              "CUSTOMER",
+              "PARTNER"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CancelBookingDto": {
+        "properties": {
+          "reason": {
+            "maxLength": 500,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ConfirmBookingDto": {
+        "properties": {
+          "booking_session_id": {
+            "type": "string"
+          },
+          "razorpay_order_id": {
+            "maxLength": 200,
+            "type": "string"
+          },
+          "razorpay_payment_id": {
+            "maxLength": 200,
+            "type": "string"
+          },
+          "razorpay_signature": {
+            "maxLength": 200,
+            "type": "string"
+          }
+        },
+        "required": [
+          "booking_session_id",
+          "razorpay_payment_id",
+          "razorpay_order_id",
+          "razorpay_signature"
+        ],
+        "type": "object"
+      },
+      "CreateBookingSessionDto": {
+        "properties": {
+          "booking_date": {
+            "pattern": "DATE_RE",
+            "type": "string"
+          },
+          "duration_minutes": {
+            "maximum": 240,
+            "minimum": 15,
+            "type": "number"
+          },
+          "ground_id": {
+            "type": "string"
+          },
+          "start_time": {
+            "pattern": "TIME_RE",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ground_id",
+          "booking_date",
+          "start_time"
+        ],
+        "type": "object"
+      },
+      "CreateExceptionDto": {
+        "properties": {
+          "end_time": {
+            "pattern": "TIME_RE",
+            "type": "string"
+          },
+          "exception_date": {
+            "type": "string"
+          },
+          "is_closed": {
+            "type": "boolean"
+          },
+          "reason": {
+            "maxLength": 500,
+            "type": "string"
+          },
+          "start_time": {
+            "pattern": "TIME_RE",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 200,
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "exception_date",
+          "start_time",
+          "end_time"
+        ],
+        "type": "object"
+      },
+      "CreateGroundDto": {
+        "properties": {
+          "description": {
+            "maxLength": 1000,
+            "type": "string"
+          },
+          "indoor": {
+            "type": "boolean"
+          },
+          "lighting": {
+            "type": "boolean"
+          },
+          "max_players": {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "number"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 2,
+            "type": "string"
+          },
+          "sport_id": {
+            "type": "string"
+          },
+          "surface_type": {
+            "enum": [
+              "NATURAL_GRASS",
+              "ARTIFICIAL_TURF",
+              "SYNTHETIC",
+              "CLAY",
+              "WOOD",
+              "RUBBER",
+              "CONCRETE"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "sport_id",
+          "surface_type",
+          "max_players"
+        ],
+        "type": "object"
+      },
+      "CreateMaintenanceBlockDto": {
+        "properties": {
+          "description": {
+            "maxLength": 1000,
+            "type": "string"
+          },
+          "end_datetime": {
+            "type": "string"
+          },
+          "start_datetime": {
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 200,
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "start_datetime",
+          "end_datetime"
+        ],
+        "type": "object"
+      },
+      "CreateOfflineBookingDto": {
+        "properties": {
+          "booking_date": {
+            "pattern": "DATE_RE",
+            "type": "string"
+          },
+          "booking_source": {
+            "enum": [
+              "WALK_IN",
+              "PHONE",
+              "WHATSAPP"
+            ],
+            "type": "string"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/OfflineCustomerDto"
+          },
+          "duration_minutes": {
+            "minimum": 15,
+            "type": "number"
+          },
+          "ground_id": {
+            "type": "string"
+          },
+          "notes": {
+            "maxLength": 500,
+            "type": "string"
+          },
+          "payment": {
+            "$ref": "#/components/schemas/OfflinePaymentDto"
+          },
+          "start_time": {
+            "pattern": "TIME_RE",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ground_id",
+          "booking_date",
+          "start_time",
+          "duration_minutes",
+          "booking_source",
+          "customer",
+          "payment"
+        ],
+        "type": "object"
+      },
+      "CreatePartnerDto": {
+        "properties": {
+          "address": {
+            "maxLength": 500,
+            "type": "string"
+          },
+          "business_name": {
+            "maxLength": 120,
+            "minLength": 2,
+            "type": "string"
+          },
+          "city": {
+            "enum": [
+              "Nashik"
+            ],
+            "type": "string"
+          },
+          "display_name": {
+            "maxLength": 120,
+            "minLength": 2,
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "pattern": "INDIA_E164_REGEX",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "Maharashtra"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "business_name",
+          "display_name",
+          "phone",
+          "city",
+          "state"
+        ],
+        "type": "object"
+      },
+      "CreatePricingRuleDto": {
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "day_of_week": {
+            "maximum": 7,
+            "minimum": 1,
+            "nullable": true,
+            "type": "number"
+          },
+          "effective_from": {
+            "type": "string"
+          },
+          "effective_to": {
+            "type": "string"
+          },
+          "end_time": {
+            "pattern": "TIME_RE",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 120,
+            "type": "string"
+          },
+          "price_paise": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "price_per_slot": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "priority": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "start_time": {
+            "pattern": "TIME_RE",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "start_time",
+          "end_time",
+          "priority"
+        ],
+        "type": "object"
+      },
+      "CreateReviewDto": {
+        "properties": {
+          "rating": {
+            "maximum": 5,
+            "minimum": 1,
+            "type": "number"
+          },
+          "review_text": {
+            "maxLength": 2000,
+            "type": "string"
+          }
+        },
+        "required": [
+          "rating"
+        ],
+        "type": "object"
+      },
+      "CreateSupportTicketDto": {
+        "properties": {
+          "attachments": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "category": {
+            "enum": [
+              "BOOKING_ISSUE",
+              "PAYMENT_ISSUE",
+              "REFUND_QUERY",
+              "OTHER"
+            ],
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 2000,
+            "type": "string"
+          },
+          "reference_code": {
+            "maxLength": 32,
+            "type": "string"
+          }
+        },
+        "required": [
+          "category",
+          "description"
+        ],
+        "type": "object"
+      },
+      "CreateVenueDto": {
+        "properties": {
+          "address": {
+            "maxLength": 500,
+            "type": "string"
+          },
+          "amenities": {
+            "enum": [
+              "parking",
+              "washroom",
+              "cafeteria",
+              "floodlights",
+              "drinking_water",
+              "first_aid",
+              "lockers",
+              "seating",
+              "wifi",
+              "changing_room"
+            ],
+            "type": "string"
+          },
+          "area": {
+            "maxLength": 120,
+            "type": "string"
+          },
+          "city": {
+            "enum": [
+              "Nashik"
+            ],
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 2000,
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "google_maps_url": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 2,
+            "type": "string"
+          },
+          "phone": {
+            "pattern": "INDIA_E164_REGEX",
+            "type": "string"
+          },
+          "postal_code": {
+            "maxLength": 20,
+            "type": "string"
+          },
+          "slug": {
+            "maxLength": 64,
+            "minLength": 3,
+            "pattern": "SLUG_REGEX",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "Maharashtra"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "slug",
+          "address",
+          "city",
+          "state",
+          "latitude",
+          "longitude"
+        ],
+        "type": "object"
+      },
+      "LogoutDto": {
+        "properties": {
+          "device_id": {
+            "maxLength": 128,
+            "type": "string"
+          }
+        },
+        "required": [
+          "device_id"
+        ],
+        "type": "object"
+      },
+      "OfflineCustomerDto": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 120,
+            "type": "string"
+          },
+          "phone": {
+            "pattern": "INDIA_E164_REGEX",
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone",
+          "name"
+        ],
+        "type": "object"
+      },
+      "OfflinePaymentDto": {
+        "properties": {
+          "amount_paise": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "external_reference": {
+            "maxLength": 120,
+            "type": "string"
+          },
+          "method": {
+            "enum": [
+              "CASH",
+              "UPI",
+              "CARD"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "method",
+          "amount_paise"
+        ],
+        "type": "object"
+      },
+      "OperatingHourDto": {
+        "properties": {
+          "closing_time": {
+            "pattern": "TIME_RE",
+            "type": "string"
+          },
+          "day_of_week": {
+            "maximum": 7,
+            "minimum": 1,
+            "type": "number"
+          },
+          "is_closed": {
+            "type": "boolean"
+          },
+          "opening_time": {
+            "pattern": "TIME_RE",
+            "type": "string"
+          }
+        },
+        "required": [
+          "day_of_week",
+          "opening_time",
+          "closing_time"
+        ],
+        "type": "object"
+      },
+      "PartnerCancelBookingDto": {
+        "properties": {
+          "reason": {
+            "maxLength": 500,
+            "type": "string"
+          },
+          "refund_amount_paise": {
+            "minimum": 0,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "PutOperatingHoursDto": {
+        "properties": {
+          "hours": {
+            "items": {
+              "$ref": "#/components/schemas/OperatingHourDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "hours"
+        ],
+        "type": "object"
+      },
+      "RegisterDeviceTokenDto": {
+        "properties": {
+          "app_version": {
+            "maxLength": 32,
+            "type": "string"
+          },
+          "device_id": {
+            "maxLength": 128,
+            "type": "string"
+          },
+          "os_version": {
+            "maxLength": 32,
+            "type": "string"
+          },
+          "platform": {
+            "enum": [
+              "ANDROID",
+              "IOS",
+              "WEB"
+            ],
+            "type": "string"
+          },
+          "token": {
+            "maxLength": 4096,
+            "minLength": 20,
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "platform",
+          "device_id"
+        ],
+        "type": "object"
+      },
+      "RequestPhoneVerificationDto": {
+        "properties": {
+          "phone": {
+            "pattern": "INDIA_E164_REGEX",
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone"
+        ],
+        "type": "object"
+      },
+      "SetMaintenanceDto": {
+        "properties": {
+          "estimated_resume_at": {
+            "type": "string"
+          },
+          "reason": {
+            "maxLength": 500,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SignUploadDto": {
+        "properties": {
+          "content_type": {
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ],
+            "type": "string"
+          },
+          "purpose": {
+            "enum": [
+              "VENUE_COVER",
+              "VENUE_GALLERY",
+              "VENUE_LOGO",
+              "GROUND_MEDIA",
+              "AVATAR"
+            ],
+            "type": "string"
+          },
+          "size_bytes": {
+            "maximum": 10485760,
+            "minimum": 1,
+            "type": "number"
+          },
+          "target_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "purpose",
+          "content_type",
+          "size_bytes"
+        ],
+        "type": "object"
+      },
+      "UpdateGroundDto": {
+        "properties": {
+          "description": {
+            "maxLength": 1000,
+            "type": "string"
+          },
+          "indoor": {
+            "type": "boolean"
+          },
+          "lighting": {
+            "type": "boolean"
+          },
+          "max_players": {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "number"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 2,
+            "type": "string"
+          },
+          "surface_type": {
+            "enum": [
+              "NATURAL_GRASS",
+              "ARTIFICIAL_TURF",
+              "SYNTHETIC",
+              "CLAY",
+              "WOOD",
+              "RUBBER",
+              "CONCRETE"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UpdateGroundMediaDto": {
+        "properties": {
+          "display_order": {
+            "minimum": 0,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "UpdatePartnerDto": {
+        "properties": {
+          "address": {
+            "maxLength": 500,
+            "type": "string"
+          },
+          "business_name": {
+            "maxLength": 120,
+            "minLength": 2,
+            "type": "string"
+          },
+          "display_name": {
+            "maxLength": 120,
+            "minLength": 2,
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "pattern": "INDIA_E164_REGEX",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UpdatePreferencesDto": {
+        "properties": {
+          "preferences": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "preferences"
+        ],
+        "type": "object"
+      },
+      "UpdatePricingRuleDto": {
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "day_of_week": {
+            "maximum": 7,
+            "minimum": 1,
+            "nullable": true,
+            "type": "number"
+          },
+          "effective_from": {
+            "type": "string"
+          },
+          "effective_to": {
+            "type": "string"
+          },
+          "end_time": {
+            "pattern": "TIME_RE",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 120,
+            "type": "string"
+          },
+          "price_paise": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "price_per_slot": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "priority": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "start_time": {
+            "pattern": "TIME_RE",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UpdateProfileDto": {
+        "properties": {
+          "avatar_url": {
+            "type": "string"
+          },
+          "city": {
+            "enum": [
+              "Nashik"
+            ],
+            "type": "string"
+          },
+          "first_name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "pattern": "NAME_REGEX",
+            "type": "string"
+          },
+          "language": {
+            "enum": [
+              "en",
+              "hi",
+              "mr"
+            ],
+            "type": "string"
+          },
+          "last_name": {
+            "maxLength": 100,
+            "pattern": "NAME_REGEX",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UpdateVenueDto": {
+        "properties": {
+          "address": {
+            "maxLength": 500,
+            "type": "string"
+          },
+          "amenities": {
+            "enum": [
+              "parking",
+              "washroom",
+              "cafeteria",
+              "floodlights",
+              "drinking_water",
+              "first_aid",
+              "lockers",
+              "seating",
+              "wifi",
+              "changing_room"
+            ],
+            "type": "string"
+          },
+          "area": {
+            "maxLength": 120,
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 2000,
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "google_maps_url": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 2,
+            "type": "string"
+          },
+          "phone": {
+            "pattern": "INDIA_E164_REGEX",
+            "type": "string"
+          },
+          "postal_code": {
+            "maxLength": 20,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UpdateVenueMediaDto": {
+        "properties": {
+          "display_order": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "media_type": {
+            "enum": [
+              "COVER",
+              "GALLERY",
+              "LOGO"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UpsertGroundConfigurationDto": {
+        "properties": {
+          "booking_duration": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "booking_interval": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "buffer_time": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "cancellation_window_hours": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "cleaning_time": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "max_advance_booking_days": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "min_notice_minutes": {
+            "minimum": 0,
+            "type": "number"
+          }
+        },
+        "required": [
+          "booking_duration",
+          "booking_interval"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "firebase": {
+        "bearerFormat": "Firebase ID token",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "idempotency-key": {
+        "in": "header",
+        "name": "Idempotency-Key",
+        "type": "apiKey"
+      }
+    }
+  },
+  "info": {
+    "contact": {},
+    "description": "TurfX Nashik MVP — booking, discovery, partner catalog, payments, notifications.\n\nAll authenticated endpoints require a Firebase ID token via `Authorization: Bearer <token>`. See Part 3.0 §4 for the response envelope and Part 3.0 §5 for the error taxonomy.",
+    "title": "TurfX API",
+    "version": "1.0.0"
+  },
+  "openapi": "3.0.0",
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "HealthController_health",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/auth/me": {
+      "get": {
+        "operationId": "AuthController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/auth/session": {
+      "post": {
+        "operationId": "AuthController_session",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthSessionDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/booking-sessions": {
+      "post": {
+        "operationId": "BookingSessionController_create",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBookingSessionDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/booking-sessions/{id}": {
+      "get": {
+        "operationId": "BookingSessionController_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/booking-sessions/{id}/actions/cancel": {
+      "post": {
+        "operationId": "BookingSessionController_cancel",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/bookings": {
+      "post": {
+        "operationId": "BookingController_confirm",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmBookingDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/bookings/{idOrRef}": {
+      "get": {
+        "operationId": "BookingController_getOne",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "idOrRef",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/bookings/{id}/actions/cancel": {
+      "post": {
+        "operationId": "BookingController_cancel",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelBookingDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/bookings/{id}/actions/request-refund": {
+      "post": {
+        "operationId": "BookingController_requestRefund",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelBookingDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/bookings/{id}/review": {
+      "post": {
+        "operationId": "ReviewController_create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReviewDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/customers/me/bookings": {
+      "get": {
+        "operationId": "CustomersController_listBookings",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "enum": [
+                "CONFIRMED",
+                "CHECKED_IN",
+                "COMPLETED",
+                "CANCELLED",
+                "REFUNDED",
+                "NO_SHOW"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "timeframe",
+            "required": false,
+            "schema": {
+              "enum": [
+                "UPCOMING",
+                "PAST",
+                "ALL"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/customers/me/favourites": {
+      "get": {
+        "operationId": "CustomersController_listFavourites",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/customers/me/favourites/venues/{venue_id}": {
+      "delete": {
+        "operationId": "CustomersController_removeFavourite",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "venue_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "operationId": "CustomersController_addFavourite",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "venue_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/discovery/featured": {
+      "get": {
+        "operationId": "DiscoveryController_featured",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/discovery/grounds/{id}": {
+      "get": {
+        "operationId": "DiscoveryController_groundDetail",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/discovery/grounds/{id}/availability": {
+      "get": {
+        "operationId": "DiscoveryController_groundAvailability",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date",
+            "required": true,
+            "schema": {
+              "pattern": "/^\\d{4}-\\d{2}-\\d{2}$/",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "duration",
+            "required": false,
+            "schema": {
+              "maximum": 240,
+              "minimum": 15,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/discovery/grounds/{id}/reviews": {
+      "get": {
+        "operationId": "DiscoveryController_groundReviews",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/discovery/near-me": {
+      "get": {
+        "operationId": "DiscoveryController_nearMe",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "lat",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "lng",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "radius_km",
+            "required": false,
+            "schema": {
+              "maximum": 50,
+              "minimum": 0.1,
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/discovery/venues": {
+      "get": {
+        "operationId": "DiscoveryController_listVenues",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sport",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "amenities",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "min_rating",
+            "required": false,
+            "schema": {
+              "maximum": 5,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "indoor",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "near",
+            "required": false,
+            "schema": {
+              "pattern": "/^-?\\d+(\\.\\d+)?,-?\\d+(\\.\\d+)?$/",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "radius_km",
+            "required": false,
+            "schema": {
+              "maximum": 50,
+              "minimum": 0.1,
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/discovery/venues/{idOrSlug}": {
+      "get": {
+        "operationId": "DiscoveryController_venueDetail",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "idOrSlug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/discovery/venues/{id}/grounds": {
+      "get": {
+        "operationId": "DiscoveryController_listVenueGrounds",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sport",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/grounds/{id}": {
+      "get": {
+        "operationId": "GroundController_detail",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      },
+      "patch": {
+        "operationId": "GroundController_update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGroundDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/grounds/{id}/actions/activate": {
+      "post": {
+        "operationId": "GroundController_activate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/grounds/{id}/actions/archive": {
+      "post": {
+        "operationId": "GroundController_archive",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/grounds/{id}/actions/resume": {
+      "post": {
+        "operationId": "GroundController_resume",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/grounds/{id}/actions/set-maintenance": {
+      "post": {
+        "operationId": "GroundController_setMaintenance",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetMaintenanceDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/grounds/{id}/configuration": {
+      "put": {
+        "operationId": "GroundController_upsertConfiguration",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertGroundConfigurationDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/grounds/{id}/exceptions": {
+      "get": {
+        "operationId": "SchedulingController_listExceptions",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "operationId": "SchedulingController_createException",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateExceptionDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/grounds/{id}/exceptions/{exception_id}": {
+      "delete": {
+        "operationId": "SchedulingController_removeException",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "exception_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/grounds/{id}/maintenance-blocks": {
+      "get": {
+        "operationId": "SchedulingController_listMaintenance",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "operationId": "SchedulingController_createMaintenanceBlock",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMaintenanceBlockDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/grounds/{id}/maintenance-blocks/{block_id}": {
+      "delete": {
+        "operationId": "SchedulingController_removeMaintenance",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "block_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/grounds/{id}/media": {
+      "post": {
+        "operationId": "GroundController_attachMedia",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttachGroundMediaDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/grounds/{id}/media/{media_id}": {
+      "delete": {
+        "operationId": "GroundController_removeMedia",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "media_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "patch": {
+        "operationId": "GroundController_updateMedia",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "media_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGroundMediaDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/grounds/{id}/operating-hours": {
+      "get": {
+        "operationId": "SchedulingController_listHours",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "put": {
+        "operationId": "SchedulingController_putHours",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PutOperatingHoursDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/grounds/{id}/pricing-rules": {
+      "get": {
+        "operationId": "GroundPricingController_list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "operationId": "GroundPricingController_create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePricingRuleDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/identity": {
+      "delete": {
+        "operationId": "IdentityController_requestDeletion",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/identity/actions/logout": {
+      "post": {
+        "operationId": "IdentityController_logout",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LogoutDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/identity/customer-code": {
+      "get": {
+        "operationId": "IdentityController_customerCode",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/identity/device-tokens": {
+      "post": {
+        "operationId": "IdentityController_registerDeviceToken",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDeviceTokenDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/identity/device-tokens/{id}": {
+      "delete": {
+        "operationId": "IdentityController_deactivateDeviceToken",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/identity/notifications": {
+      "get": {
+        "operationId": "IdentityController_listNotifications",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "unread_only",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "category",
+            "required": false,
+            "schema": {
+              "enum": [
+                "BOOKING_CONFIRMATION",
+                "BOOKING_REMINDER",
+                "BOOKING_CANCELLATION",
+                "PAYMENT_SUCCESS",
+                "PAYMENT_FAILURE",
+                "REFUND_PROCESSED",
+                "CHECK_IN_REMINDER",
+                "REVIEW_REQUEST",
+                "VENUE_APPROVED",
+                "VENUE_SUSPENDED",
+                "GROUND_MAINTENANCE",
+                "PROMOTION",
+                "SYSTEM_ANNOUNCEMENT"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/identity/notifications/actions/mark-all-read": {
+      "post": {
+        "operationId": "IdentityController_markAllRead",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/identity/notifications/{id}/actions/mark-read": {
+      "post": {
+        "operationId": "IdentityController_markRead",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/identity/phone/confirm": {
+      "post": {
+        "operationId": "IdentityController_confirmPhone",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/identity/phone/request-verification": {
+      "post": {
+        "operationId": "IdentityController_requestPhoneVerification",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestPhoneVerificationDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/identity/profile": {
+      "patch": {
+        "operationId": "IdentityController_updateProfile",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/notifications/preferences": {
+      "get": {
+        "operationId": "NotificationController_getPreferences",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "patch": {
+        "operationId": "NotificationController_updatePreferences",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePreferencesDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/notifications/unread-count": {
+      "get": {
+        "operationId": "NotificationController_unreadCount",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/partners": {
+      "post": {
+        "operationId": "PartnerController_create",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePartnerDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/partners/me": {
+      "get": {
+        "operationId": "PartnerController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      },
+      "patch": {
+        "operationId": "PartnerController_update",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePartnerDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/partners/me/actions/submit-for-review": {
+      "post": {
+        "operationId": "PartnerController_submitForReview",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/partners/me/bookings": {
+      "get": {
+        "operationId": "PartnerBookingController_listBookings",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "venue_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "ground_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "enum": [
+                "CONFIRMED",
+                "CHECKED_IN",
+                "COMPLETED",
+                "CANCELLED",
+                "REFUNDED",
+                "NO_SHOW"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "source",
+            "required": false,
+            "schema": {
+              "enum": [
+                "CUSTOMER_APP",
+                "PARTNER_APP",
+                "WALK_IN",
+                "PHONE",
+                "WHATSAPP",
+                "ADMIN"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "pattern": "DATE_RE",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "pattern": "DATE_RE",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "maxLength": 120,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/partners/me/bookings/offline": {
+      "post": {
+        "operationId": "PartnerBookingController_createOffline",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOfflineBookingDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/partners/me/bookings/{id}/actions/cancel": {
+      "post": {
+        "operationId": "PartnerBookingController_cancel",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PartnerCancelBookingDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/partners/me/bookings/{id}/actions/check-in": {
+      "post": {
+        "operationId": "PartnerBookingController_checkIn",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/partners/me/bookings/{id}/actions/complete": {
+      "post": {
+        "operationId": "PartnerBookingController_complete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/partners/me/bookings/{id}/actions/mark-no-show": {
+      "post": {
+        "operationId": "PartnerBookingController_markNoShow",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/partners/me/calendar": {
+      "get": {
+        "operationId": "PartnerBookingController_calendar",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "ground_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "required": true,
+            "schema": {
+              "pattern": "DATE_RE",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "required": true,
+            "schema": {
+              "pattern": "DATE_RE",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/partners/me/dashboard": {
+      "get": {
+        "operationId": "PartnerController_dashboard",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "range",
+            "required": false,
+            "schema": {
+              "enum": [
+                "today",
+                "this_week",
+                "this_month",
+                "last_30_days"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/platform/config": {
+      "get": {
+        "operationId": "PlatformController_config",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/platform/version-check": {
+      "get": {
+        "operationId": "PlatformController_versionCheck",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "platform",
+            "required": true,
+            "schema": {
+              "enum": [
+                "ANDROID",
+                "IOS"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "variant",
+            "required": true,
+            "schema": {
+              "enum": [
+                "CUSTOMER",
+                "PARTNER"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "pattern": "SEMVER_RE",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/pricing-rules/{id}": {
+      "delete": {
+        "operationId": "PricingController_deactivate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "patch": {
+        "operationId": "PricingController_update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePricingRuleDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/sports": {
+      "get": {
+        "operationId": "SportsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/support/lookup": {
+      "get": {
+        "operationId": "SupportController_lookup",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "maxLength": 32,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/support/tickets": {
+      "post": {
+        "operationId": "SupportController_createTicket",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSupportTicketDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/uploads/sign": {
+      "post": {
+        "operationId": "UploadController_sign",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignUploadDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/venues": {
+      "post": {
+        "operationId": "VenueController_create",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVenueDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/venues/mine": {
+      "get": {
+        "operationId": "VenueController_listMine",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "enum": [
+                "DRAFT",
+                "UNDER_REVIEW",
+                "PUBLISHED",
+                "SUSPENDED",
+                "ARCHIVED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/venues/{id}": {
+      "get": {
+        "operationId": "VenueController_detail",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      },
+      "patch": {
+        "operationId": "VenueController_update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateVenueDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/venues/{id}/actions/archive": {
+      "post": {
+        "operationId": "VenueController_archive",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/venues/{id}/actions/submit-for-review": {
+      "post": {
+        "operationId": "VenueController_submit",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/venues/{id}/actions/suspend": {
+      "post": {
+        "operationId": "VenueController_suspend",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/venues/{id}/media": {
+      "post": {
+        "operationId": "VenueController_attachMedia",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttachVenueMediaDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/venues/{id}/media/{media_id}": {
+      "delete": {
+        "operationId": "VenueController_removeMedia",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "media_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "patch": {
+        "operationId": "VenueController_updateMedia",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "media_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateVenueMediaDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/venues/{venue_id}/grounds": {
+      "get": {
+        "operationId": "VenueGroundsController_list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "venue_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "operationId": "VenueGroundsController_create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "venue_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGroundDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/webhooks/razorpay": {
+      "post": {
+        "operationId": "RazorpayWebhookController_receive",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    }
+  },
+  "servers": [
+    {
+      "description": "Same origin",
+      "url": "/"
+    }
+  ],
+  "tags": []
+}
