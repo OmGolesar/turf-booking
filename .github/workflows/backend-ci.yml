@@ -1,0 +1,139 @@
+# Backend CI — Phase 6 Task 6.1.
+#
+# Runs on every PR touching `backend/**`. Three parallel jobs so failure
+# signals surface together (no wasted "unit was going to fail anyway"
+# reruns). Existing `backend-openapi.yml` handles the OpenAPI drift check.
+#
+# Jobs
+# ────
+#   build            — npm ci + prisma generate + nest build. Nest build shells
+#                      out to tsc, so this doubles as the type-check step. If
+#                      the code doesn't compile, the job is red.
+#   unit-tests       — jest unit suite (`test:unit`). No Docker needed.
+#   integration-tests — jest integration + e2e suites (`test:integration`).
+#                       testcontainers spins up postgis/postgis:17-3.4 against
+#                       the runner's native Docker daemon; no `services:` block
+#                       needed because the tests want to own the container
+#                       lifecycle. `--runInBand` (already in the jest config)
+#                       keeps one container per suite.
+#
+# What's deliberately skipped
+# ───────────────────────────
+#   • lint — no ESLint config in the repo yet (blueprint §15 calls for one).
+#     Add a `lint` job here when `backend/eslint.config.js` lands.
+#   • Deploy — Task 6.2 covers the deploy runbook; CI here is PR-check-only.
+#
+# Trigger scope: `backend/**` and this file. Flutter-only PRs skip.
+
+name: Backend CI
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+
+concurrency:
+  group: backend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  build:
+    name: Build (type-check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Prisma generate produces @prisma/client types used by src/**. Without
+      # it, `nest build` fails on missing type declarations.
+      - name: Prisma generate
+        run: npx prisma generate
+
+      - name: Nest build (tsc)
+        run: npm run build
+
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prisma generate
+        run: npx prisma generate
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+  integration-tests:
+    name: Integration + E2E tests
+    runs-on: ubuntu-latest
+    # Testcontainers needs Docker. GH ubuntu-latest ships docker preinstalled
+    # + /var/run/docker.sock owned by the runner user, so no setup step.
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prisma generate
+        run: npx prisma generate
+
+      # Pre-pull the postgis image so testcontainers doesn't count the
+      # ~700MB pull against the per-suite startup timeout. Version-pinned
+      # to match harness.ts.
+      - name: Pre-pull postgis image
+        run: docker pull postgis/postgis:17-3.4
+
+      - name: Run integration + E2E tests
+        env:
+          # Fills the same placeholder shape the openapi generator uses so
+          # AppModule's ConfigModule.forRoot() validation passes when the e2e
+          # specs boot the app. testcontainers overrides DATABASE_URL at
+          # runtime; the rest are never used because Firebase + Razorpay are
+          # stubbed via Test.overrideProvider.
+          NODE_ENV: test
+          DATABASE_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder
+          REDIS_URL: redis://localhost:6379
+          FIREBASE_PROJECT_ID: ci-placeholder
+          FIREBASE_CLIENT_EMAIL: ci@placeholder.invalid
+          FIREBASE_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\nplaceholder\n-----END PRIVATE KEY-----\n"
+          RAZORPAY_KEY_ID: rzp_test_placeholder
+          RAZORPAY_KEY_SECRET: placeholder
+          RAZORPAY_WEBHOOK_SECRET: placeholder
+          SUPABASE_URL: https://placeholder.supabase.invalid
+          SUPABASE_SERVICE_ROLE_KEY: placeholder
+          SUPABASE_STORAGE_BUCKET: placeholder
+          MSG91_AUTH_KEY: placeholder
+          MSG91_SENDER_ID: PLCHDR
+          FCM_SERVICE_ACCOUNT: "{}"
+          SENDGRID_API_KEY: placeholder
+        run: npm run test:integration
