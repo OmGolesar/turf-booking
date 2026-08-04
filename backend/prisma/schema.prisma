@@ -191,6 +191,13 @@ enum BackgroundJobStatus {
   DISABLED
 }
 
+enum ChatMessageRole {
+  USER
+  ASSISTANT
+  TOOL
+  SYSTEM
+}
+
 // ─── Reference: Sports ────────────────────────────────────────────────────
 
 model Sport {
@@ -236,6 +243,7 @@ model Identity {
   notifications   Notification[]
   auditLogs       AuditLog[]
   favourites      CustomerFavourite[]
+  chatConversations ChatConversation[]
 
   @@index([role, status])
   @@map("identities")
@@ -810,6 +818,45 @@ model WebhookReceipt {
   @@unique([provider, eventId], map: "uq_webhook_event_id")
   @@index([status, createdAt])
   @@map("webhook_receipts")
+}
+
+// ─── Chatbot ──────────────────────────────────────────────────────────────
+// LLM-backed conversational assistant. Guests allowed (identityId nullable).
+// Messages stored one-per-turn; content JSONB matches Anthropic block shape
+// (text, tool_use, tool_result) so we can replay a conversation verbatim.
+
+model ChatConversation {
+  id            String   @id @default(uuid()) @db.Uuid
+  identityId    String?  @map("identity_id") @db.Uuid
+  title         String?  @db.VarChar(120)
+  lastMessageAt DateTime @default(now()) @map("last_message_at") @db.Timestamptz(6)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  identity Identity?     @relation(fields: [identityId], references: [id])
+  messages ChatMessage[]
+
+  @@index([identityId, lastMessageAt(sort: Desc)])
+  @@index([lastMessageAt(sort: Desc)])
+  @@map("chat_conversations")
+}
+
+model ChatMessage {
+  id             String          @id @default(uuid()) @db.Uuid
+  conversationId String          @map("conversation_id") @db.Uuid
+  sequenceNo     Int             @map("sequence_no")
+  role           ChatMessageRole
+  content        Json
+  latencyMs      Int?            @map("latency_ms")
+  inputTokens    Int?            @map("input_tokens")
+  outputTokens   Int?            @map("output_tokens")
+  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  conversation ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, sequenceNo])
+  @@index([conversationId, sequenceNo])
+  @@map("chat_messages")
 }
 
 model BackgroundJob {
