@@ -114,6 +114,9 @@ export const ErrorCode = {
   IDEMPOTENCY_KEY_CONFLICT: 'IDEMPOTENCY_KEY_CONFLICT',
   IDEMPOTENCY_KEY_IN_FLIGHT: 'IDEMPOTENCY_KEY_IN_FLIGHT',
 
+  // Chat
+  CHAT_AUTH_REQUIRED: 'CHAT_AUTH_REQUIRED',
+
   // Cross-cutting
   VALIDATION_FAILED: 'VALIDATION_FAILED',
   RATE_LIMIT_EXCEEDED: 'RATE_LIMIT_EXCEEDED',
@@ -227,6 +230,8 @@ export const ERROR_STATUS: Record<ErrorCodeKey, number> = {
   IDEMPOTENCY_KEY_CONFLICT: 409,
   IDEMPOTENCY_KEY_IN_FLIGHT: 409,
 
+  CHAT_AUTH_REQUIRED: 401,
+
   VALIDATION_FAILED: 400,
   RATE_LIMIT_EXCEEDED: 429,
   RESOURCE_NOT_FOUND: 404,
@@ -335,6 +340,8 @@ export const ERROR_MESSAGE: Record<ErrorCodeKey, string> = {
 
   IDEMPOTENCY_KEY_CONFLICT: 'Idempotency key was reused with a different request body.',
   IDEMPOTENCY_KEY_IN_FLIGHT: 'A request with this idempotency key is already in flight.',
+
+  CHAT_AUTH_REQUIRED: 'You need to sign in to book, view, or cancel bookings.',
 
   VALIDATION_FAILED: 'One or more fields failed validation.',
   RATE_LIMIT_EXCEEDED: 'Rate limit exceeded. Please retry later.',

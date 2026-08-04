@@ -2753,7 +2753,8 @@
                 "WALK_IN",
                 "PHONE",
                 "WHATSAPP",
-                "ADMIN"
+                "ADMIN",
+                "CHATBOT"
               ],
               "type": "string"
             }

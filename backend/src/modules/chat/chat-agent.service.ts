@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Anthropic from '@anthropic-ai/sdk';
-import { ChatToolsService } from './chat-tools.service';
+import { ChatToolsService, type ChatHandoff, type ToolContext } from './chat-tools.service';
 import { TOOL_DEFINITIONS } from './tools/tool-definitions';
 import { DomainException } from '../../shared/errors/domain.exception';
 import type { AppConfig } from '../../config/configuration';
@@ -21,6 +21,7 @@ export interface AgentRunInput {
   history: MessageParam[];  // prior conversation (already validated)
   userMessage: string;
   ctx: UserContext;
+  toolCtx: ToolContext;     // auth + requestId — carried to each tool call
 }
 
 export interface AgentRunOutput {
@@ -30,6 +31,7 @@ export interface AgentRunOutput {
   turns: MessageParam[];            // full turns to persist (user + tool_use rounds + final assistant)
   usage: { input_tokens: number; output_tokens: number };
   latency_ms: number;
+  handoff: ChatHandoff | null;      // First handoff produced by any tool this turn (e.g. Razorpay payment sheet)
 }
 
 export const ANTHROPIC_CLIENT = Symbol('ANTHROPIC_CLIENT');
@@ -57,6 +59,8 @@ export class ChatAgentService {
     ];
     const toolTrace: AgentRunOutput['toolTrace'] = [];
     const usage = { input_tokens: 0, output_tokens: 0 };
+    // First handoff wins — dropping later ones prevents racing the client.
+    let handoff: ChatHandoff | null = null;
 
     for (let iter = 0; iter < this.maxIterations; iter++) {
       const response = await this.client.messages.create({
@@ -80,6 +84,7 @@ export class ChatAgentService {
           turns: messages.slice(input.history.length),
           usage,
           latency_ms: Date.now() - started,
+          handoff,
         };
       }
 
@@ -89,13 +94,18 @@ export class ChatAgentService {
       );
       const toolResults = await Promise.all(
         toolUses.map(async (u) => {
-          const result = await this.tools.execute(u.name, u.input as Record<string, unknown>);
+          const result = await this.tools.execute(
+            u.name,
+            u.input as Record<string, unknown>,
+            input.toolCtx,
+          );
           toolTrace.push({
             name: u.name,
             input: u.input,
             ok: result.ok,
             error_code: result.error?.code,
           });
+          if (result.handoff && !handoff) handoff = result.handoff;
           return {
             type: 'tool_result' as const,
             tool_use_id: u.id,
@@ -128,6 +138,7 @@ export class ChatAgentService {
       turns: messages.slice(input.history.length),
       usage,
       latency_ms: Date.now() - started,
+      handoff,
     };
   }
 
@@ -137,7 +148,7 @@ export class ChatAgentService {
       : 'The user has not shared their GPS location.';
     const auth = ctx.is_authenticated
       ? 'The user is signed in.'
-      : 'The user is a guest (not signed in).';
+      : 'The user is a guest (not signed in). Booking, viewing my-bookings, and cancelling require sign-in.';
 
     return [
       'You are TurfX Concierge, an assistant for booking turfs in Nashik, India.',
@@ -152,7 +163,6 @@ export class ChatAgentService {
       '- Prefer `find_nearby_venues` over `search_venues` when the user says "near me" or omits a location.',
       '- Keep replies short: 3-6 sentences. Lead with the top pick, then 1-2 alternatives if useful. End with a single actionable question.',
       '- If a tool returns an error, tell the user what went wrong in plain language and offer the next best step. Do not surface error codes.',
-      '- Never book anything. If the user asks to book, tell them the booking flow is coming soon and to tap the "Book" button on the venue.',
     ].join('\n');
   }
 }

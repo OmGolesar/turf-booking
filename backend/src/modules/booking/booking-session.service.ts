@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { BookingSessionStatus, Prisma } from '@prisma/client';
+import { BookingSessionStatus, BookingSource, Prisma } from '@prisma/client';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { OutboxService } from '../../shared/outbox/outbox.service';
 import { AuditService } from '../../shared/audit/audit.service';
@@ -27,7 +27,13 @@ export class BookingSessionService {
   ) {}
 
   // POST /booking-sessions — the concurrency-critical write path.
-  async create(ctx: AuthContext, dto: CreateBookingSessionDto, meta: RequestMeta) {
+  // source: channel-specific override (CHATBOT etc.); defaults to CUSTOMER_APP.
+  async create(
+    ctx: AuthContext,
+    dto: CreateBookingSessionDto,
+    meta: RequestMeta,
+    source: BookingSource = BookingSource.CUSTOMER_APP,
+  ) {
     await this.assertPhoneVerified(ctx);
 
     // Load ground + configuration + pricing rules fresh (no cache).
@@ -74,6 +80,7 @@ export class BookingSessionService {
             totalAmount: new Prisma.Decimal(priced.price_rupees),
             expiresAt,
             status: BookingSessionStatus.ACTIVE,
+            bookingSource: source,
             createdBy: ctx.identityId,
           },
         });

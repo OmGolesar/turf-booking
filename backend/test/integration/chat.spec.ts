@@ -1,29 +1,43 @@
 // End-to-end walkthrough for the chatbot module.
 //
-// This spec exists because the recommender's PostGIS/raw-SQL query cannot be
-// meaningfully unit-tested against a mocked Prisma. So we boot a real Postgres
-// via testcontainers (same harness the other integration specs use), apply
-// every migration including 0016_chatbot_tables, seed multiple venues at known
-// coordinates, and drive the whole chain end-to-end:
+// This spec exists because the recommender's PostGIS query and the booking
+// hand-off flow cannot be meaningfully unit-tested against a mocked Prisma.
+// So we boot a real Postgres via testcontainers (same harness the other
+// integration specs use), apply every migration including 0016+0017, seed
+// multiple venues at known coordinates, and drive the whole chain end-to-end:
 //
-//   1. Chat migration applied (chat_conversations + chat_messages exist).
+//   1. Chat migrations applied (chat_conversations + chat_messages exist,
+//      booking_sessions.booking_source column exists, CHATBOT enum value).
 //   2. Recommender: PostGIS + availability + scoring returns correct ranking.
 //   3. ChatService: agent tool call → tool executor → recommender → persistence.
 //   4. Replay: GET /chat/conversations/:id returns the full turn history.
+//   5. Booking flow: hold_slot creates a session with bookingSource=CHATBOT,
+//      returns Razorpay handoff, and the persisted booking (created via the
+//      normal confirm path) carries CHATBOT attribution through to the DB.
+//   6. Auth gates: guest cannot hold/cancel/list-bookings.
+//   7. Cancel via chat: BookingService.cancel works end-to-end.
 //
 // The Anthropic client is faked — we script the exact tool_use → tool_result →
-// end_turn sequence so we can verify the wiring without an API key.
+// end_turn sequence so we can verify the wiring without an API key. Razorpay
+// is faked at the boundary so we don't call the real API but still exercise
+// the full transactional path (session create + refund on cancel).
 
-import { ChatMessageRole, PrismaClient } from '@prisma/client';
+import { BookingSource, BookingStatus, ChatMessageRole, PrismaClient, Role } from '@prisma/client';
 import type Anthropic from '@anthropic-ai/sdk';
-import { ConfigService } from '@nestjs/config';
+import { formatIstIso, toIstDateString } from '../../src/shared/time/ist';
 import { AvailabilityService } from '../../src/modules/availability/availability.service';
 import { AvailabilityCache } from '../../src/modules/availability/availability.cache';
 import { DiscoveryService } from '../../src/modules/discovery/discovery.service';
+import { BookingSessionService } from '../../src/modules/booking/booking-session.service';
+import { BookingService } from '../../src/modules/booking/booking.service';
+import { CustomersService } from '../../src/modules/customers/customers.service';
+import { OutboxService } from '../../src/shared/outbox/outbox.service';
+import { AuditService } from '../../src/shared/audit/audit.service';
 import { ChatRecommenderService } from '../../src/modules/chat/chat-recommender.service';
 import { ChatToolsService } from '../../src/modules/chat/chat-tools.service';
 import { ChatAgentService } from '../../src/modules/chat/chat-agent.service';
 import { ChatService } from '../../src/modules/chat/chat.service';
+import type { AuthContext } from '../../src/shared/auth/auth-context';
 import { startHarness, type IntegrationHarness } from './harness';
 
 describe('chat module (E2E)', () => {
@@ -31,7 +45,16 @@ describe('chat module (E2E)', () => {
   let prisma: PrismaClient;
   let recommender: ChatRecommenderService;
   let chatService: ChatService;
+  let bookingService: BookingService;
+  let bookingSessionService: BookingSessionService;
   let fakeAnthropic: { messages: { create: jest.Mock } };
+  let fakeRazorpay: {
+    createOrder: jest.Mock;
+    keyId: jest.Mock;
+    verifySignature: jest.Mock;
+    fetchPayment: jest.Mock;
+    createRefund: jest.Mock;
+  };
 
   beforeAll(async () => {
     h = await startHarness();
@@ -49,7 +72,57 @@ describe('chat module (E2E)', () => {
       prisma as unknown as ConstructorParameters<typeof ChatRecommenderService>[0],
       availability,
     );
-    const tools = new ChatToolsService(discovery, availability, recommender);
+    const customers = new CustomersService(
+      prisma as unknown as ConstructorParameters<typeof CustomersService>[0],
+    );
+    const outbox = new OutboxService();
+    const audit = new AuditService();
+
+    fakeRazorpay = {
+      createOrder: jest.fn(async (amountPaise: number, receipt: string) => ({
+        id: `order_test_${receipt}`,
+        amount: amountPaise,
+        currency: 'INR',
+      })),
+      keyId: jest.fn(() => 'rzp_test_stub'),
+      verifySignature: jest.fn(() => true),
+      fetchPayment: jest.fn(async (_paymentId: string) => ({
+        id: 'pay_test',
+        status: 'captured',
+        amount: 60000,
+        method: 'upi',
+        order_id: 'order_test_session:sess',
+      })),
+      createRefund: jest.fn(async (_txn: string, amountPaise: number) => ({
+        id: 'rfnd_test',
+        amount: amountPaise,
+        status: 'processed',
+      })),
+    };
+
+    bookingSessionService = new BookingSessionService(
+      prisma as unknown as ConstructorParameters<typeof BookingSessionService>[0],
+      outbox,
+      audit,
+      fakeRazorpay as unknown as ConstructorParameters<typeof BookingSessionService>[3],
+      availability,
+    );
+    bookingService = new BookingService(
+      prisma as unknown as ConstructorParameters<typeof BookingService>[0],
+      outbox,
+      audit,
+      fakeRazorpay as unknown as ConstructorParameters<typeof BookingService>[3],
+      availability,
+    );
+
+    const tools = new ChatToolsService(
+      discovery,
+      availability,
+      recommender,
+      bookingSessionService,
+      bookingService,
+      customers,
+    );
 
     fakeAnthropic = { messages: { create: jest.fn() } };
     const config = {
@@ -82,6 +155,21 @@ describe('chat module (E2E)', () => {
          AND tablename IN ('chat_conversations','chat_messages')
     `;
     expect(rows.map((r) => r.tablename).sort()).toEqual(['chat_conversations', 'chat_messages']);
+  });
+
+  it('applied migration 0017 (BookingSource.CHATBOT + booking_sessions.booking_source column)', async () => {
+    const enumRows = await prisma.$queryRaw<Array<{ enumlabel: string }>>`
+      SELECT enumlabel FROM pg_enum
+        JOIN pg_type ON pg_type.oid = pg_enum.enumtypid
+       WHERE pg_type.typname = 'BookingSource'
+    `;
+    expect(enumRows.map((r) => r.enumlabel)).toContain('CHATBOT');
+
+    const columnRows = await prisma.$queryRaw<Array<{ column_name: string }>>`
+      SELECT column_name FROM information_schema.columns
+       WHERE table_name = 'booking_sessions' AND column_name = 'booking_source'
+    `;
+    expect(columnRows).toHaveLength(1);
   });
 
   it('recommender returns top-3 ranked by distance, rating, price with real PostGIS', async () => {
@@ -259,6 +347,255 @@ describe('chat module (E2E)', () => {
       ChatMessageRole.ASSISTANT,
     ]);
   });
+
+  // ── Booking flow (Phase 3) ─────────────────────────────────────────
+
+  it('hold_slot creates a BookingSession with bookingSource=CHATBOT and returns Razorpay handoff', async () => {
+    const seed = await seedThreeVenues(prisma);
+    const customer = await createPhoneVerifiedCustomer(prisma, 'cust-hold');
+    const today = tomorrowIst(); // tomorrow to safely clear min-notice
+
+    fakeAnthropic.messages.create
+      .mockResolvedValueOnce({
+        content: [
+          {
+            type: 'tool_use',
+            id: 'tu_hold',
+            name: 'hold_slot',
+            input: { ground_id: seed.closeCricketGroundId, date: today, start_time: '19:00' },
+          },
+        ],
+        stop_reason: 'tool_use',
+        usage: { input_tokens: 100, output_tokens: 20 },
+      })
+      .mockResolvedValueOnce({
+        content: [{ type: 'text', text: 'Held for you at Close Nashik. Opening payment sheet.' }],
+        stop_reason: 'end_turn',
+        usage: { input_tokens: 150, output_tokens: 20 },
+      });
+
+    const result = await chatService.sendMessage(
+      { message: `Book Close Nashik cricket at 7pm on ${today}`, client_now_iso: nowInIst() },
+      customer.auth,
+    );
+
+    expect(result.tools_used[0]).toMatchObject({ name: 'hold_slot', ok: true });
+    // The handoff is what the Flutter app consumes to open Razorpay Checkout.
+    expect(result.handoff).toMatchObject({
+      type: 'confirm_booking',
+      razorpay_key_id: 'rzp_test_stub',
+      amount_paise: expect.any(Number),
+      expires_at: expect.any(String),
+    });
+    expect(result.handoff!.booking_session_id).toBeTruthy();
+    expect(result.handoff!.razorpay_order_id).toBeTruthy();
+
+    // Verify the DB — the source was stored on the session, ready for confirm to promote.
+    const session = await prisma.bookingSession.findUniqueOrThrow({
+      where: { id: result.handoff!.booking_session_id },
+    });
+    expect(session.bookingSource).toBe(BookingSource.CHATBOT);
+    expect(session.identityId).toBe(customer.auth.identityId);
+    expect(session.status).toBe('ACTIVE');
+    expect(fakeRazorpay.createOrder).toHaveBeenCalled();
+  });
+
+  it('CHATBOT source propagates from BookingSession → Booking when confirm runs (existing app flow)', async () => {
+    const seed = await seedThreeVenues(prisma);
+    const customer = await createPhoneVerifiedCustomer(prisma, 'cust-confirm');
+    const today = tomorrowIst();
+
+    // Simulate chat holding the slot.
+    fakeAnthropic.messages.create
+      .mockResolvedValueOnce({
+        content: [{ type: 'tool_use', id: 'tu_hold', name: 'hold_slot', input: { ground_id: seed.closeCricketGroundId, date: today, start_time: '19:00' } }],
+        stop_reason: 'tool_use',
+        usage: { input_tokens: 100, output_tokens: 20 },
+      })
+      .mockResolvedValueOnce({
+        content: [{ type: 'text', text: 'Held.' }],
+        stop_reason: 'end_turn',
+        usage: { input_tokens: 100, output_tokens: 10 },
+      });
+
+    const chat = await chatService.sendMessage(
+      { message: 'book it', client_now_iso: nowInIst() },
+      customer.auth,
+    );
+    const sessionId = chat.handoff!.booking_session_id;
+    const session = await prisma.bookingSession.findUniqueOrThrow({ where: { id: sessionId } });
+    // Payment fetch must return the correct order_id + amount to pass verifySignature+match.
+    fakeRazorpay.fetchPayment.mockResolvedValueOnce({
+      id: 'pay_from_chat',
+      status: 'captured',
+      amount: Math.round(Number(session.totalAmount) * 100),
+      method: 'upi',
+      order_id: chat.handoff!.razorpay_order_id,
+    });
+
+    // App confirms via the normal (non-chat) confirm path.
+    const confirmed = await bookingService.confirm(
+      customer.auth,
+      {
+        booking_session_id: sessionId,
+        razorpay_payment_id: 'pay_from_chat',
+        razorpay_order_id: chat.handoff!.razorpay_order_id,
+        razorpay_signature: 'sig_stub',
+      },
+      { requestId: 'confirm-1' },
+    );
+
+    // The stamped booking row carries CHATBOT — that's the whole point of migration 0017.
+    const booking = await prisma.booking.findUniqueOrThrow({ where: { id: confirmed.booking.id } });
+    expect(booking.bookingSource).toBe(BookingSource.CHATBOT);
+    expect(booking.bookingStatus).toBe(BookingStatus.CONFIRMED);
+  });
+
+  it('default sessions (no source override) confirm as CUSTOMER_APP — schema default applies', async () => {
+    const seed = await seedThreeVenues(prisma);
+    const customer = await createPhoneVerifiedCustomer(prisma, 'cust-default');
+    const today = tomorrowIst();
+    const held = await bookingSessionService.create(
+      customer.auth,
+      { ground_id: seed.closeCricketGroundId, booking_date: today, start_time: '19:00' },
+      { requestId: 'default-1' },
+      // No source override — should get CUSTOMER_APP via the column default.
+    );
+    const session = await prisma.bookingSession.findUniqueOrThrow({ where: { id: held.session.id } });
+    expect(session.bookingSource).toBe(BookingSource.CUSTOMER_APP);
+  });
+
+  it('hold_slot as guest returns CHAT_AUTH_REQUIRED and does not create a session', async () => {
+    const seed = await seedThreeVenues(prisma);
+    const today = tomorrowIst();
+
+    fakeAnthropic.messages.create
+      .mockResolvedValueOnce({
+        content: [{ type: 'tool_use', id: 'tu_hold', name: 'hold_slot', input: { ground_id: seed.closeCricketGroundId, date: today, start_time: '19:00' } }],
+        stop_reason: 'tool_use',
+        usage: { input_tokens: 100, output_tokens: 20 },
+      })
+      .mockResolvedValueOnce({
+        content: [{ type: 'text', text: 'You need to sign in first.' }],
+        stop_reason: 'end_turn',
+        usage: { input_tokens: 120, output_tokens: 10 },
+      });
+
+    const result = await chatService.sendMessage(
+      { message: 'book it', client_now_iso: nowInIst() },
+      null,
+    );
+
+    expect(result.tools_used[0]).toMatchObject({ name: 'hold_slot', ok: false, error_code: 'CHAT_AUTH_REQUIRED' });
+    expect(result.handoff).toBeNull();
+    const sessions = await prisma.bookingSession.count();
+    expect(sessions).toBe(0);
+  });
+
+  it('cancel_booking via chat cancels a confirmed booking and issues a refund', async () => {
+    const seed = await seedThreeVenues(prisma);
+    const customer = await createPhoneVerifiedCustomer(prisma, 'cust-cancel');
+    const today = tomorrowIst();
+
+    // Set up a confirmed booking straight in the DB (skip the chat holding path for speed).
+    const hold = await bookingSessionService.create(
+      customer.auth,
+      { ground_id: seed.closeCricketGroundId, booking_date: today, start_time: '19:00' },
+      { requestId: 'setup-1' },
+      BookingSource.CHATBOT,
+    );
+    fakeRazorpay.fetchPayment.mockResolvedValueOnce({
+      id: 'pay_for_cancel',
+      status: 'captured',
+      amount: hold.payment_order.amount_paise,
+      method: 'upi',
+      order_id: hold.payment_order.order_id,
+    });
+    const confirmed = await bookingService.confirm(
+      customer.auth,
+      {
+        booking_session_id: hold.session.id,
+        razorpay_payment_id: 'pay_for_cancel',
+        razorpay_order_id: hold.payment_order.order_id,
+        razorpay_signature: 'sig_stub',
+      },
+      { requestId: 'setup-2' },
+    );
+
+    // Now the user cancels via chat.
+    fakeAnthropic.messages.create
+      .mockResolvedValueOnce({
+        content: [{ type: 'tool_use', id: 'tu_cancel', name: 'cancel_booking', input: { booking_id_or_reference: confirmed.booking.reference_code } }],
+        stop_reason: 'tool_use',
+        usage: { input_tokens: 100, output_tokens: 20 },
+      })
+      .mockResolvedValueOnce({
+        content: [{ type: 'text', text: 'Cancelled. Refund of ₹600 in 5 days.' }],
+        stop_reason: 'end_turn',
+        usage: { input_tokens: 120, output_tokens: 20 },
+      });
+
+    const result = await chatService.sendMessage(
+      { message: `Cancel booking ${confirmed.booking.reference_code}`, client_now_iso: nowInIst() },
+      customer.auth,
+    );
+
+    expect(result.tools_used[0]).toMatchObject({ name: 'cancel_booking', ok: true });
+    const booking = await prisma.booking.findUniqueOrThrow({ where: { id: confirmed.booking.id } });
+    expect(booking.bookingStatus).toBe(BookingStatus.CANCELLED);
+    expect(fakeRazorpay.createRefund).toHaveBeenCalled();
+  });
+
+  it('get_my_bookings returns the caller\'s bookings via chat', async () => {
+    const seed = await seedThreeVenues(prisma);
+    const customer = await createPhoneVerifiedCustomer(prisma, 'cust-list');
+    const today = tomorrowIst();
+    const hold = await bookingSessionService.create(
+      customer.auth,
+      { ground_id: seed.closeCricketGroundId, booking_date: today, start_time: '19:00' },
+      { requestId: 'setup-list' },
+      BookingSource.CHATBOT,
+    );
+    fakeRazorpay.fetchPayment.mockResolvedValueOnce({
+      id: 'pay_list',
+      status: 'captured',
+      amount: hold.payment_order.amount_paise,
+      method: 'upi',
+      order_id: hold.payment_order.order_id,
+    });
+    await bookingService.confirm(
+      customer.auth,
+      {
+        booking_session_id: hold.session.id,
+        razorpay_payment_id: 'pay_list',
+        razorpay_order_id: hold.payment_order.order_id,
+        razorpay_signature: 'sig_stub',
+      },
+      { requestId: 'setup-list-confirm' },
+    );
+
+    fakeAnthropic.messages.create
+      .mockResolvedValueOnce({
+        content: [{ type: 'tool_use', id: 'tu_list', name: 'get_my_bookings', input: {} }],
+        stop_reason: 'tool_use',
+        usage: { input_tokens: 80, output_tokens: 10 },
+      })
+      .mockResolvedValueOnce({
+        content: [{ type: 'text', text: 'You have 1 upcoming booking.' }],
+        stop_reason: 'end_turn',
+        usage: { input_tokens: 100, output_tokens: 15 },
+      });
+
+    const result = await chatService.sendMessage(
+      { message: 'what have I booked?', client_now_iso: nowInIst() },
+      customer.auth,
+    );
+
+    expect(result.tools_used[0]).toMatchObject({ name: 'get_my_bookings', ok: true });
+    const stored = await chatService.getConversation(result.conversation_id, customer.auth);
+    const toolResult = stored.messages[2].content as Array<{ content: string }>;
+    expect(toolResult[0].content).toContain('TX-BK-');
+  });
 });
 
 // ── fixture ──────────────────────────────────────────────────────────────
@@ -410,8 +747,37 @@ async function createVenue(
 }
 
 function todayIst(): string {
-  // Availability service's window check runs today-in-IST. Use today's IST date.
-  const now = new Date();
-  const istOffsetMs = 5.5 * 3600 * 1000;
-  return new Date(now.getTime() + istOffsetMs).toISOString().slice(0, 10);
+  return toIstDateString(new Date());
+}
+
+function tomorrowIst(): string {
+  return toIstDateString(new Date(Date.now() + 24 * 60 * 60 * 1000));
+}
+
+function nowInIst(): string {
+  return formatIstIso(new Date());
+}
+
+async function createPhoneVerifiedCustomer(
+  prisma: PrismaClient,
+  seed: string,
+): Promise<{ auth: AuthContext }> {
+  // Every booking service call demands identity.phoneVerifiedAt to be set.
+  const identity = await prisma.identity.create({
+    data: {
+      firebaseUid: `test:${seed}`,
+      phone: `+9199${seed.replace(/[^0-9]/g, '').padEnd(8, '9').slice(0, 8)}`,
+      role: Role.CUSTOMER,
+      phoneVerifiedAt: new Date(),
+    },
+  });
+  return {
+    auth: {
+      identityId: identity.id,
+      firebaseUid: identity.firebaseUid,
+      role: Role.CUSTOMER,
+      status: 'ACTIVE',
+      isVerified: true,
+    },
+  };
 }

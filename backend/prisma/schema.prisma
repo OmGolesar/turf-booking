@@ -88,6 +88,7 @@ enum BookingSource {
   PHONE
   WHATSAPP
   ADMIN
+  CHATBOT
 }
 
 enum BookingStatus {
@@ -550,17 +551,18 @@ model PricingRule {
 // ─── Booking ──────────────────────────────────────────────────────────────
 
 model BookingSession {
-  id          String               @id @default(uuid()) @db.Uuid
-  identityId  String               @map("identity_id") @db.Uuid
-  groundId    String               @map("ground_id") @db.Uuid
-  bookingDate DateTime             @map("booking_date") @db.Date
-  startTime   DateTime             @map("start_time") @db.Time(6)
-  endTime     DateTime             @map("end_time") @db.Time(6)
-  totalAmount Decimal              @map("total_amount") @db.Decimal(10, 2)
-  expiresAt   DateTime             @map("expires_at") @db.Timestamptz(6)
-  status      BookingSessionStatus @default(ACTIVE)
-  createdAt   DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id            String               @id @default(uuid()) @db.Uuid
+  identityId    String               @map("identity_id") @db.Uuid
+  groundId      String               @map("ground_id") @db.Uuid
+  bookingDate   DateTime             @map("booking_date") @db.Date
+  startTime     DateTime             @map("start_time") @db.Time(6)
+  endTime       DateTime             @map("end_time") @db.Time(6)
+  totalAmount   Decimal              @map("total_amount") @db.Decimal(10, 2)
+  expiresAt     DateTime             @map("expires_at") @db.Timestamptz(6)
+  status        BookingSessionStatus @default(ACTIVE)
+  bookingSource BookingSource        @default(CUSTOMER_APP) @map("booking_source")
+  createdAt     DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   createdBy String?   @map("created_by") @db.Uuid
   updatedBy String?   @map("updated_by") @db.Uuid

@@ -39,6 +39,7 @@ describe('ChatAgentService', () => {
       history: [],
       userMessage: 'hi',
       ctx: { now_iso: '2026-08-04T18:00:00+05:30', is_authenticated: false },
+      toolCtx: { auth: null, requestId: 'test-req' },
     });
     expect(out.reply).toBe('Hi there!');
     expect(out.toolTrace).toEqual([]);
@@ -72,8 +73,13 @@ describe('ChatAgentService', () => {
       history: [],
       userMessage: 'near me',
       ctx: { lat: 20, lng: 73, now_iso: '2026-08-04T18:00:00+05:30', is_authenticated: false },
+      toolCtx: { auth: null, requestId: 'test-req' },
     });
-    expect(tools.execute).toHaveBeenCalledWith('find_nearby_venues', { lat: 20, lng: 73 });
+    expect(tools.execute).toHaveBeenCalledWith(
+      'find_nearby_venues',
+      { lat: 20, lng: 73 },
+      { auth: null, requestId: 'test-req' },
+    );
     expect(out.reply).toContain('2 turfs found');
     expect(out.toolTrace).toEqual([{ name: 'find_nearby_venues', input: { lat: 20, lng: 73 }, ok: true, error_code: undefined }]);
     // turns = [user, assistant(tool_use), user(tool_result), assistant(text)]
@@ -101,6 +107,7 @@ describe('ChatAgentService', () => {
       history: [],
       userMessage: 'tell me about ghost',
       ctx: { now_iso: '2026-08-04T18:00:00+05:30', is_authenticated: false },
+      toolCtx: { auth: null, requestId: 'test-req' },
     });
     expect(out.toolTrace[0]).toMatchObject({ name: 'get_venue_details', ok: false, error_code: 'VENUE_NOT_FOUND' });
     expect(out.reply).toMatch(/does not exist/);
@@ -120,6 +127,7 @@ describe('ChatAgentService', () => {
       history: [],
       userMessage: '?',
       ctx: { now_iso: '2026-08-04T18:00:00+05:30', is_authenticated: false },
+      toolCtx: { auth: null, requestId: 'test-req' },
     });
     expect(client.messages.create).toHaveBeenCalledTimes(4); // 3 loop + 1 forced
     expect(out.reply).toBe('Cap hit — final answer.');

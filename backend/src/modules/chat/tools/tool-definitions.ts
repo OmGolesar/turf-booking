@@ -87,6 +87,60 @@ export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
       },
     },
   },
+  {
+    name: 'hold_slot',
+    description:
+      'Reserve a specific slot on a specific ground for ~10 minutes and return a payment handoff. ' +
+      'Only call when the user has explicitly asked to book (not just browse); confirm the exact slot first if ambiguous. ' +
+      'After a successful hold, reply in ONE sentence — "Held for you at <venue> on <date> at <time> — ₹<amount> to confirm. The app is opening the payment sheet." — and DO NOT call this or any other tool again for the same slot. ' +
+      'Error handling: CHAT_AUTH_REQUIRED → tell the user to sign in. IDENTITY_PHONE_NOT_VERIFIED → tell them to verify their phone. BOOKING_SLOT_UNAVAILABLE → apologise, call `check_availability` for the same ground/date, offer the next free slot. BOOKING_MIN_NOTICE / BOOKING_ADVANCE_WINDOW → explain the constraint in plain language.',
+    input_schema: {
+      type: 'object',
+      required: ['ground_id', 'date', 'start_time'],
+      properties: {
+        ground_id: { type: 'string', description: 'Ground UUID (from search/recommend results).' },
+        date: { type: 'string', description: 'IST date YYYY-MM-DD.' },
+        start_time: { type: 'string', description: 'IST time HH:MM. Must match an AVAILABLE slot from check_availability.' },
+        duration_minutes: { type: 'integer', description: 'Slot length. Omit to use ground default.' },
+      },
+    },
+  },
+  {
+    name: 'get_my_bookings',
+    description:
+      "List the signed-in user's bookings. Use when the user asks 'what have I booked', 'my bookings', 'am I going anywhere?'. " +
+      'Default to timeframe=UPCOMING, limit 5. Requires sign-in — expect CHAT_AUTH_REQUIRED for guests.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        timeframe: {
+          type: 'string',
+          enum: ['UPCOMING', 'PAST', 'ALL'],
+          description: 'Default UPCOMING (future confirmed/checked-in bookings only).',
+        },
+        limit: { type: 'integer', description: 'Max results (1-20). Default 5.' },
+      },
+    },
+  },
+  {
+    name: 'cancel_booking',
+    description:
+      "Cancel one of the user's confirmed bookings. Refund is automatic and 100% when within the cancellation window. " +
+      'IMPORTANT: only call this AFTER the user has explicitly confirmed the cancellation intent in a separate message ("yes cancel it", "go ahead"). Never cancel on first mention. ' +
+      'After a successful cancel, report the refund amount and expected settlement window from the result. ' +
+      'Requires sign-in — expect CHAT_AUTH_REQUIRED for guests.',
+    input_schema: {
+      type: 'object',
+      required: ['booking_id_or_reference'],
+      properties: {
+        booking_id_or_reference: {
+          type: 'string',
+          description: 'Booking UUID or reference code (TX-BK-YYYYNNNNNN) — either works.',
+        },
+        reason: { type: 'string', description: 'Optional short reason. Max 500 chars.' },
+      },
+    },
+  },
 ];
 
 export const TOOL_NAMES = TOOL_DEFINITIONS.map((t) => t.name);
