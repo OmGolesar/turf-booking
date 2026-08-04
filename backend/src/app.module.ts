@@ -29,6 +29,7 @@ import { NotificationModule } from './modules/notification/notification.module';
 import { SupportModule } from './modules/support/support.module';
 import { PlatformModule } from './modules/platform/platform.module';
 import { WebhookModule } from './modules/webhook/webhook.module';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Controller('health')
 class HealthController {
@@ -67,6 +68,7 @@ class HealthController {
     SupportModule,
     PlatformModule,
     WebhookModule,
+    ChatModule,
   ],
   controllers: [HealthController],
   providers: [

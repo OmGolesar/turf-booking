@@ -648,6 +648,30 @@
         ],
         "type": "object"
       },
+      "SendMessageDto": {
+        "properties": {
+          "client_now_iso": {
+            "type": "string"
+          },
+          "conversation_id": {
+            "type": "string"
+          },
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          },
+          "message": {
+            "maxLength": 2000,
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "type": "object"
+      },
       "SetMaintenanceDto": {
         "properties": {
           "estimated_resume_at": {
@@ -1233,6 +1257,54 @@
         },
         "responses": {
           "201": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/chat/conversations/{id}": {
+      "get": {
+        "operationId": "ChatController_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/chat/messages": {
+      "post": {
+        "operationId": "ChatController_send",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
             "description": ""
           }
         }

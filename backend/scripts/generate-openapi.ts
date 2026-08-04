@@ -45,6 +45,7 @@ function fillPlaceholderEnv(): void {
     MSG91_SENDER_ID: 'PLCHDR',
     FCM_SERVICE_ACCOUNT: '{}',
     SENDGRID_API_KEY: 'placeholder',
+    ANTHROPIC_API_KEY: 'placeholder',
   };
   for (const [k, v] of Object.entries(defaults)) {
     if (!process.env[k]) process.env[k] = v;

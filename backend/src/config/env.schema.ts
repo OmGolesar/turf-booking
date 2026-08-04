@@ -31,6 +31,10 @@ export const envSchema = z.object({
   PLATFORM_CITY: z.string().default('Nashik'),
   PLATFORM_TIMEZONE: z.literal('Asia/Kolkata').default('Asia/Kolkata'),
   PLATFORM_CURRENCY: z.literal('INR').default('INR'),
+
+  ANTHROPIC_API_KEY: z.string().min(1),
+  ANTHROPIC_MODEL: z.string().default('claude-sonnet-4-5-20250929'),
+  CHAT_MAX_TOOL_ITERATIONS: z.coerce.number().int().positive().default(6),
 });
 
 export type Env = z.infer<typeof envSchema>;
