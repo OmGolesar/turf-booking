@@ -136,4 +136,5 @@ jobs:
           MSG91_SENDER_ID: PLCHDR
           FCM_SERVICE_ACCOUNT: "{}"
           SENDGRID_API_KEY: placeholder
+          ANTHROPIC_API_KEY: placeholder
         run: npm run test:integration
