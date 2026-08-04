@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { ChatMessageRole, Prisma } from '@prisma/client';
 import type Anthropic from '@anthropic-ai/sdk';
+import { ulid } from 'ulid';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { DomainException } from '../../shared/errors/domain.exception';
 import type { AuthContext } from '../../shared/auth/auth-context';
 import { ChatAgentService, type UserContext } from './chat-agent.service';
+import type { ChatHandoff } from './chat-tools.service';
 import type { SendMessageDto } from './dtos/send-message.dto';
 
 // A conversation is a persistent stream of turns. The client always POSTs the
@@ -20,6 +22,10 @@ export interface SendMessageResult {
   reply: string;
   tools_used: Array<{ name: string; ok: boolean; error_code?: string }>;
   latency_ms: number;
+  // Non-null when a tool this turn produced state the CLIENT must consume —
+  // e.g. after `hold_slot` succeeds, the app opens Razorpay Checkout with
+  // the returned order + amount, then posts the signature to POST /v1/bookings.
+  handoff: ChatHandoff | null;
 }
 
 interface StoredMessageRow {
@@ -36,7 +42,11 @@ export class ChatService {
     const conversation = await this.resolveConversation(dto.conversation_id, auth);
     const history = await this.loadHistory(conversation.id);
     const nextSeq = history.length;
+    const requestId = ulid();
 
+    // Phone-verification status is enforced deep in BookingSessionService and
+    // surfaced back as IDENTITY_PHONE_NOT_VERIFIED via the tool error path — no
+    // need to preflight it here on every message.
     const ctx: UserContext = {
       lat: dto.lat,
       lng: dto.lng,
@@ -48,6 +58,7 @@ export class ChatService {
       history: this.hydrateForAgent(history),
       userMessage: dto.message,
       ctx,
+      toolCtx: { auth, requestId },
     });
 
     // Persist every produced turn atomically so a mid-run crash doesn't leave
@@ -92,6 +103,7 @@ export class ChatService {
       reply: result.reply,
       tools_used: result.toolTrace.map((t) => ({ name: t.name, ok: t.ok, error_code: t.error_code })),
       latency_ms: result.latency_ms,
+      handoff: result.handoff,
     };
   }
 

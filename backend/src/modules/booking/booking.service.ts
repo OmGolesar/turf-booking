@@ -85,6 +85,10 @@ export class BookingService {
         throw new DomainException('PAYMENT_SIGNATURE_INVALID');
       }
 
+      // Booking source is set on the session at hold time (default CUSTOMER_APP,
+      // per migration 0017); confirm just propagates it to the booking row.
+      const source = session.bookingSource;
+
       // Create booking + payment in this same tx. Reference codes come from triggers.
       const booking = await tx.booking.create({
         data: {
@@ -96,7 +100,7 @@ export class BookingService {
           bookingDate: session.bookingDate,
           startTime: session.startTime,
           endTime: session.endTime,
-          bookingSource: BookingSource.CUSTOMER_APP,
+          bookingSource: source,
           bookingStatus: BookingStatus.CONFIRMED,
           totalAmount: session.totalAmount,
           currency: 'INR',
@@ -152,7 +156,7 @@ export class BookingService {
           start_time: fmtTime(booking.startTime),
           end_time: fmtTime(booking.endTime),
           total_amount_paise: expectedPaise,
-          source: BookingSource.CUSTOMER_APP,
+          source,
         },
         correlationId: meta.requestId,
       });
