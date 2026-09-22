@@ -83,10 +83,29 @@ describe('customer golden path E2E (Task 5.5)', () => {
         method: 'upi',
         order_id: paymentId.replace(/^pay_/, 'order_'),
       }),
-      createRefund: async (paymentId: string, amountPaise: number) => ({
+      createRefund: async (paymentId: string, amountPaise: number, notes?: Record<string, string>) => ({
         id: `rfnd_${paymentId}`,
         amount: amountPaise,
         status: 'processed',
+        notes,
+      }),
+      // Stub returns an empty list so findOrCreateRefund always creates fresh
+      // in this happy-path e2e. The dedupe behaviour has dedicated coverage
+      // in the integration suite.
+      listRefunds: async (_paymentId: string) => [],
+      findOrCreateRefund: async (
+        paymentId: string,
+        amountPaise: number,
+        idempotencyKey: string,
+        extraNotes: Record<string, string> = {},
+      ) => ({
+        refund: {
+          id: `rfnd_${paymentId}`,
+          amount: amountPaise,
+          status: 'processed',
+          notes: { ...extraNotes, idempotency_key: idempotencyKey },
+        },
+        reused: false,
       }),
       verifySignature: () => true,
       verifyWebhookSignature: () => true,

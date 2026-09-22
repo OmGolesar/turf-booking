@@ -16,6 +16,7 @@ import { BookingService } from '../../src/modules/booking/booking.service';
 import { RazorpayWebhookHandlerService } from '../../src/modules/webhook/razorpay-handler.service';
 import { OutboxService } from '../../src/shared/outbox/outbox.service';
 import { AuditService } from '../../src/shared/audit/audit.service';
+import { RefundService } from '../../src/modules/refund/refund.service';
 import { startHarness, type IntegrationHarness } from './harness';
 
 const ITERATIONS = 20;
@@ -47,6 +48,12 @@ describe('client-confirm vs razorpay webhook race (Task 5.4)', () => {
 
     const outbox = new OutboxService();
     const audit = new AuditService();
+    const refunds = new RefundService(
+      prisma as unknown as ConstructorParameters<typeof RefundService>[0],
+      outbox,
+      audit,
+      razorpayStub as unknown as ConstructorParameters<typeof RefundService>[3],
+    );
 
     bookingService = new BookingService(
       prisma as unknown as ConstructorParameters<typeof BookingService>[0],
@@ -54,11 +61,13 @@ describe('client-confirm vs razorpay webhook race (Task 5.4)', () => {
       audit,
       razorpayStub,
       availabilityStub,
+      refunds,
     );
     webhookHandler = new RazorpayWebhookHandlerService(
       prisma as unknown as ConstructorParameters<typeof RazorpayWebhookHandlerService>[0],
       outbox,
       availabilityStub as unknown as ConstructorParameters<typeof RazorpayWebhookHandlerService>[2],
+      refunds,
     );
   }, 180_000);
 

@@ -7,10 +7,12 @@ import {
   PaymentProvider,
   PaymentStatus,
   Prisma,
+  RefundRequestSource,
 } from '@prisma/client';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { OutboxService } from '../../shared/outbox/outbox.service';
 import { AvailabilityService } from '../availability/availability.service';
+import { RefundService } from '../refund/refund.service';
 
 // Razorpay webhook envelope — only the fields we touch. Everything else is
 // captured verbatim in webhook_receipts.raw_body for forensic replay.
@@ -54,6 +56,7 @@ export class RazorpayWebhookHandlerService {
     private readonly prisma: PrismaService,
     private readonly outbox: OutboxService,
     private readonly availability: AvailabilityService,
+    private readonly refunds: RefundService,
   ) {}
 
   // Dispatch by event.type. Returns "PROCESSED" | "IGNORED"; the controller
@@ -117,11 +120,22 @@ export class RazorpayWebhookHandlerService {
         if (already) return;
 
         if (session.status !== BookingSessionStatus.ACTIVE) {
-          // Session expired but payment succeeded. Log for support; refund is
-          // an operator decision. ponytail: log-only, add auto-refund when ops confirms policy.
-          this.logger.error(
+          // Session lapsed but payment succeeded. Enqueue a RefundRequest
+          // for admin review — idempotent via the partial UNIQUE on
+          // refund_requests.razorpay_payment_id, so a Razorpay retry does
+          // not create duplicate rows.
+          await this.refunds.createInTx(tx, {
+            razorpayPaymentId: p.id,
+            amountPaise: p.amount,
+            bookingSessionId: session.id,
+            source: RefundRequestSource.ORPHANED_PAYMENT,
+            actorIdentityId: null,
+            reason: `payment.captured on ${session.status} session (via webhook)`,
+            correlationId: envelope.id ?? undefined,
+          });
+          this.logger.warn(
             { session_id: sessionId, session_status: session.status, payment_id: p.id, amount_paise: p.amount },
-            'payment.captured on non-ACTIVE session — requires manual refund review',
+            'payment.captured on non-ACTIVE session — RefundRequest queued for admin',
           );
           return;
         }

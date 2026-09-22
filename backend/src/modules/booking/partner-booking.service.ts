@@ -107,12 +107,21 @@ export class PartnerBookingService {
       const refundPaise = dto.refund_amount_paise ?? totalPaise;
       if (refundPaise > totalPaise) throw new DomainException('REFUND_INELIGIBLE');
 
+      // findOrCreateRefund dedupes on notes.idempotency_key so a retry after
+      // a transient Razorpay network error doesn't double-refund. Partial
+      // refunds are keyed by (booking, amount) so a partner adjusting the
+      // amount downwards creates a distinct request; identical retries collapse.
       let refundRef: string | null = null;
       if (refundPaise > 0 && booking.payment.paymentProvider === PaymentProvider.RAZORPAY) {
-        const refund = await this.razorpay.createRefund(booking.payment.transactionReference, refundPaise, {
-          booking_reference: booking.referenceCode,
-          initiated_by: 'PARTNER',
-        });
+        const { refund } = await this.razorpay.findOrCreateRefund(
+          booking.payment.transactionReference,
+          refundPaise,
+          `partner-cancel:${booking.id}:${refundPaise}`,
+          {
+            booking_reference: booking.referenceCode,
+            initiated_by: 'PARTNER',
+          },
+        );
         refundRef = refund.id;
       }
 

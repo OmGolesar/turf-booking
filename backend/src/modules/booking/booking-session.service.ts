@@ -120,6 +120,13 @@ export class BookingSessionService {
       // Razorpay Order — receipt links to session so support can trace either direction.
       const order = await this.razorpay.createOrder(priced.price_paise, `session:${session.id}`);
 
+      // Record the order id on the session so the orphan-order sweeper can
+      // cross-reference sessions ↔ Razorpay orders without hitting search.
+      await tx.bookingSession.update({
+        where: { id: session.id },
+        data: { razorpayOrderId: order.id },
+      });
+
       // Bust the availability cache for this slot so subsequent fetches see HELD.
       this.availability.invalidate(ground.id, dto.booking_date);
 

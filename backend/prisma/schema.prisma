@@ -120,6 +120,24 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum RefundRequestSource {
+  ORPHANED_PAYMENT
+  CUSTOMER_REQUEST
+  ADMIN_MANUAL
+
+  @@map("refund_request_source")
+}
+
+enum RefundRequestStatus {
+  PENDING_ADMIN
+  APPROVED
+  REJECTED
+  EXECUTED
+  FAILED
+
+  @@map("refund_request_status")
+}
+
 enum OutboxStatus {
   PENDING
   PROCESSING
@@ -561,6 +579,7 @@ model BookingSession {
   expiresAt     DateTime             @map("expires_at") @db.Timestamptz(6)
   status        BookingSessionStatus @default(ACTIVE)
   bookingSource BookingSource        @default(CUSTOMER_APP) @map("booking_source")
+  razorpayOrderId String?            @map("razorpay_order_id") @db.VarChar(64)
   createdAt     DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt     DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
 
@@ -882,4 +901,33 @@ model BackgroundJob {
 
   @@index([nextRunAt, status])
   @@map("background_jobs")
+}
+
+// refund_requests — admin-approval queue for refunds.
+// FK targets (payments/bookings/booking_sessions/identities) are enforced by
+// the migration; kept as scalar refs here to avoid noisy back-refs on four
+// aggregates. Loads that need the joined shape do so explicitly in RefundService.
+model RefundRequest {
+  id                 String              @id @default(uuid()) @db.Uuid
+  razorpayPaymentId  String              @map("razorpay_payment_id") @db.VarChar(64)
+  paymentId          String?             @map("payment_id") @db.Uuid
+  bookingId          String?             @map("booking_id") @db.Uuid
+  bookingSessionId   String?             @map("booking_session_id") @db.Uuid
+  amountPaise        Int                 @map("amount_paise")
+  currency           String              @default("INR") @db.VarChar(3)
+  source             RefundRequestSource
+  status             RefundRequestStatus @default(PENDING_ADMIN)
+  reason             String?
+  adminNotes         String?             @map("admin_notes")
+  decidedBy          String?             @map("decided_by") @db.Uuid
+  decidedAt          DateTime?           @map("decided_at") @db.Timestamptz(6)
+  executedAt         DateTime?           @map("executed_at") @db.Timestamptz(6)
+  razorpayRefundId   String?             @map("razorpay_refund_id") @db.VarChar(64)
+  attempts           Int                 @default(0)
+  lastError          String?             @map("last_error")
+  createdAt          DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime            @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([status, createdAt])
+  @@map("refund_requests")
 }

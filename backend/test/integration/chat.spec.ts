@@ -33,6 +33,7 @@ import { BookingService } from '../../src/modules/booking/booking.service';
 import { CustomersService } from '../../src/modules/customers/customers.service';
 import { OutboxService } from '../../src/shared/outbox/outbox.service';
 import { AuditService } from '../../src/shared/audit/audit.service';
+import { RefundService } from '../../src/modules/refund/refund.service';
 import { ChatRecommenderService } from '../../src/modules/chat/chat-recommender.service';
 import { ChatToolsService } from '../../src/modules/chat/chat-tools.service';
 import { ChatAgentService } from '../../src/modules/chat/chat-agent.service';
@@ -54,6 +55,8 @@ describe('chat module (E2E)', () => {
     verifySignature: jest.Mock;
     fetchPayment: jest.Mock;
     createRefund: jest.Mock;
+    listRefunds: jest.Mock;
+    findOrCreateRefund: jest.Mock;
   };
 
   beforeAll(async () => {
@@ -93,11 +96,31 @@ describe('chat module (E2E)', () => {
         method: 'upi',
         order_id: 'order_test_session:sess',
       })),
-      createRefund: jest.fn(async (_txn: string, amountPaise: number) => ({
+      createRefund: jest.fn(async (_txn: string, amountPaise: number, notes?: Record<string, string>) => ({
         id: 'rfnd_test',
         amount: amountPaise,
         status: 'processed',
+        notes,
       })),
+      // Refund dedupe path — mirrors production RazorpayService.
+      // Chat cancel flow calls findOrCreateRefund directly; assertions on
+      // createRefund elsewhere in the file still hold because production
+      // eventually calls it under the hood in the non-reused branch.
+      listRefunds: jest.fn(async (_paymentId: string) => []),
+      findOrCreateRefund: jest.fn(async (
+        paymentId: string,
+        amountPaise: number,
+        idempotencyKey: string,
+        extraNotes: Record<string, string> = {},
+      ) => {
+        // Delegate to createRefund so tests that assert on createRefund
+        // being called (the chat cancel spec) still observe the call.
+        const refund = await fakeRazorpay.createRefund(paymentId, amountPaise, {
+          ...extraNotes,
+          idempotency_key: idempotencyKey,
+        });
+        return { refund, reused: false };
+      }),
     };
 
     bookingSessionService = new BookingSessionService(
@@ -107,12 +130,19 @@ describe('chat module (E2E)', () => {
       fakeRazorpay as unknown as ConstructorParameters<typeof BookingSessionService>[3],
       availability,
     );
+    const refunds = new RefundService(
+      prisma as unknown as ConstructorParameters<typeof RefundService>[0],
+      outbox,
+      audit,
+      fakeRazorpay as unknown as ConstructorParameters<typeof RefundService>[3],
+    );
     bookingService = new BookingService(
       prisma as unknown as ConstructorParameters<typeof BookingService>[0],
       outbox,
       audit,
       fakeRazorpay as unknown as ConstructorParameters<typeof BookingService>[3],
       availability,
+      refunds,
     );
 
     const tools = new ChatToolsService(

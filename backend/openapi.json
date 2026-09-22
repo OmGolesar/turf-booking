@@ -1,6 +1,15 @@
 {
   "components": {
     "schemas": {
+      "ApproveRefundRequestDto": {
+        "properties": {
+          "admin_notes": {
+            "maxLength": 500,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "AttachGroundMediaDto": {
         "properties": {
           "display_order": {
@@ -636,6 +645,18 @@
         ],
         "type": "object"
       },
+      "RejectRefundRequestDto": {
+        "properties": {
+          "admin_notes": {
+            "maxLength": 500,
+            "type": "string"
+          }
+        },
+        "required": [
+          "admin_notes"
+        ],
+        "type": "object"
+      },
       "RequestPhoneVerificationDto": {
         "properties": {
           "phone": {
@@ -1017,6 +1038,116 @@
       "get": {
         "operationId": "HealthController_health",
         "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/admin/refunds": {
+      "get": {
+        "operationId": "RefundAdminController_list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/admin/refunds/{id}": {
+      "get": {
+        "operationId": "RefundAdminController_getOne",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/admin/refunds/{id}/actions/approve": {
+      "post": {
+        "operationId": "RefundAdminController_approve",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApproveRefundRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/admin/refunds/{id}/actions/reject": {
+      "post": {
+        "operationId": "RefundAdminController_reject",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectRefundRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": ""
