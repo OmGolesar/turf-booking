@@ -7,6 +7,7 @@ import {
   PaymentProvider,
   PaymentStatus,
   Prisma,
+  RefundRequestSource,
   Role,
 } from '@prisma/client';
 import { PrismaService } from '../../shared/prisma/prisma.service';
@@ -15,6 +16,7 @@ import { AuditService } from '../../shared/audit/audit.service';
 import { RazorpayService } from '../../shared/razorpay/razorpay.service';
 import { DomainException } from '../../shared/errors/domain.exception';
 import { AvailabilityService } from '../availability/availability.service';
+import { RefundService } from '../refund/refund.service';
 import type { AuthContext } from '../../shared/auth/auth-context';
 import type { ConfirmBookingDto } from './dtos/confirm-booking.dto';
 import type { CancelBookingDto } from './dtos/cancel-booking.dto';
@@ -39,6 +41,7 @@ export class BookingService {
     private readonly audit: AuditService,
     private readonly razorpay: RazorpayService,
     private readonly availability: AvailabilityService,
+    private readonly refunds: RefundService,
   ) {}
 
   // POST /bookings — promote a session into a booking.
@@ -52,7 +55,12 @@ export class BookingService {
     const payment = await this.razorpay.fetchPayment(dto.razorpay_payment_id);
     if (payment.status !== 'captured') throw new DomainException('PAYMENT_NOT_CAPTURED');
 
-    const bookingId = await this.prisma.$transaction(async (tx) => {
+    type ConfirmOutcome =
+      | { kind: 'CONFIRMED'; bookingId: string }
+      | { kind: 'ALREADY_CONFIRMED' }
+      | { kind: 'ORPHAN'; reason: string };
+
+    const outcome = await this.prisma.$transaction(async (tx): Promise<ConfirmOutcome> => {
       // FOR UPDATE — block concurrent confirmations against the same session.
       const rows = await tx.$queryRaw<{ id: string }[]>(
         Prisma.sql`SELECT id FROM booking_sessions WHERE id = ${dto.booking_session_id}::uuid FOR UPDATE`,
@@ -65,17 +73,38 @@ export class BookingService {
       });
       if (!session) throw new DomainException('BOOKING_SESSION_NOT_FOUND');
       if (session.identityId !== ctx.identityId) throw new DomainException('BOOKING_SESSION_NOT_FOUND');
+
+      // Orphan detection: payment captured on a session that's not eligible.
+      // We enqueue a RefundRequest inside this tx (idempotent via the partial
+      // UNIQUE on refund_requests.razorpay_payment_id) and return an ORPHAN
+      // outcome so the caller can commit and surface the queued state.
       if (session.status !== BookingSessionStatus.ACTIVE) {
-        // If a booking already exists for this session (idempotent replay path
-        // that didn't hit the interceptor cache), return it.
         const existing = await tx.booking.findUnique({ where: { bookingSessionId: session.id } });
-        if (existing) throw new DomainException('BOOKING_ALREADY_CONFIRMED');
-        throw new DomainException('BOOKING_SESSION_EXPIRED');
+        if (existing) return { kind: 'ALREADY_CONFIRMED' };
+        await this.refunds.createInTx(tx, {
+          razorpayPaymentId: payment.id,
+          amountPaise: payment.amount,
+          bookingSessionId: session.id,
+          source: RefundRequestSource.ORPHANED_PAYMENT,
+          actorIdentityId: null,
+          reason: `Payment captured on ${session.status} booking session`,
+          correlationId: meta.requestId,
+        }, meta);
+        return { kind: 'ORPHAN', reason: `session ${session.status}` };
       }
       if (session.expiresAt <= new Date()) {
         // Race with the ExpireBookingSessions job — the payment succeeded but
-        // the hold lapsed. Refund is the operator's call; we surface the code.
-        throw new DomainException('BOOKING_SESSION_EXPIRED');
+        // the hold lapsed. Queue a refund request for admin approval.
+        await this.refunds.createInTx(tx, {
+          razorpayPaymentId: payment.id,
+          amountPaise: payment.amount,
+          bookingSessionId: session.id,
+          source: RefundRequestSource.ORPHANED_PAYMENT,
+          actorIdentityId: null,
+          reason: 'Payment captured after booking session expired',
+          correlationId: meta.requestId,
+        }, meta);
+        return { kind: 'ORPHAN', reason: 'session expired' };
       }
 
       const expectedPaise = Math.round(Number(session.totalAmount) * 100);
@@ -175,11 +204,20 @@ export class BookingService {
         correlationId: meta.requestId,
       });
 
-      return booking.id;
+      return { kind: 'CONFIRMED', bookingId: booking.id };
     });
 
-    this.availability.invalidate(await this.groundIdForBooking(bookingId));
-    return this.serializeBookingResponse(bookingId);
+    if (outcome.kind === 'ALREADY_CONFIRMED') throw new DomainException('BOOKING_ALREADY_CONFIRMED');
+    if (outcome.kind === 'ORPHAN') {
+      this.logger.warn(
+        { payment_id: payment.id, session_id: dto.booking_session_id, reason: outcome.reason },
+        'Payment captured on ineligible session — RefundRequest queued for admin',
+      );
+      throw new DomainException('BOOKING_SESSION_EXPIRED_REFUND_QUEUED');
+    }
+
+    this.availability.invalidate(await this.groundIdForBooking(outcome.bookingId));
+    return this.serializeBookingResponse(outcome.bookingId);
   }
 
   // POST /bookings/:id/actions/cancel — customer path.
@@ -207,12 +245,18 @@ export class BookingService {
       const totalPaise = Math.round(Number(booking.totalAmount) * 100);
 
       // Razorpay refund (100% MVP). If OFFLINE payment, skip the provider call.
+      // Use findOrCreateRefund so a retry after a transient network error (which
+      // rolls the tx back) doesn't double-refund: the deterministic marker on
+      // notes.idempotency_key lets us reuse the prior refund.
       let refundRef: string | null = null;
       let refundAmountPaise = totalPaise;
       if (booking.payment.paymentProvider === PaymentProvider.RAZORPAY) {
-        const refund = await this.razorpay.createRefund(booking.payment.transactionReference, totalPaise, {
-          booking_reference: booking.referenceCode,
-        });
+        const { refund } = await this.razorpay.findOrCreateRefund(
+          booking.payment.transactionReference,
+          totalPaise,
+          `cancel:${booking.id}`,
+          { booking_reference: booking.referenceCode, initiated_by: 'CUSTOMER' },
+        );
         refundRef = refund.id;
         refundAmountPaise = refund.amount;
       }
