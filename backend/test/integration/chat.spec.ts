@@ -55,6 +55,8 @@ describe('chat module (E2E)', () => {
     verifySignature: jest.Mock;
     fetchPayment: jest.Mock;
     createRefund: jest.Mock;
+    listRefunds: jest.Mock;
+    findOrCreateRefund: jest.Mock;
   };
 
   beforeAll(async () => {
@@ -94,11 +96,31 @@ describe('chat module (E2E)', () => {
         method: 'upi',
         order_id: 'order_test_session:sess',
       })),
-      createRefund: jest.fn(async (_txn: string, amountPaise: number) => ({
+      createRefund: jest.fn(async (_txn: string, amountPaise: number, notes?: Record<string, string>) => ({
         id: 'rfnd_test',
         amount: amountPaise,
         status: 'processed',
+        notes,
       })),
+      // Refund dedupe path — mirrors production RazorpayService.
+      // Chat cancel flow calls findOrCreateRefund directly; assertions on
+      // createRefund elsewhere in the file still hold because production
+      // eventually calls it under the hood in the non-reused branch.
+      listRefunds: jest.fn(async (_paymentId: string) => []),
+      findOrCreateRefund: jest.fn(async (
+        paymentId: string,
+        amountPaise: number,
+        idempotencyKey: string,
+        extraNotes: Record<string, string> = {},
+      ) => {
+        // Delegate to createRefund so tests that assert on createRefund
+        // being called (the chat cancel spec) still observe the call.
+        const refund = await fakeRazorpay.createRefund(paymentId, amountPaise, {
+          ...extraNotes,
+          idempotency_key: idempotencyKey,
+        });
+        return { refund, reused: false };
+      }),
     };
 
     bookingSessionService = new BookingSessionService(
