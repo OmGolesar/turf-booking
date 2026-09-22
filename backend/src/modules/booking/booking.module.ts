@@ -6,8 +6,10 @@ import { BookingService } from './booking.service';
 import { PartnerBookingController } from './partner-booking.controller';
 import { OfflineBookingService } from './offline-booking.service';
 import { PartnerBookingService } from './partner-booking.service';
+import { RefundModule } from '../refund/refund.module';
 
 @Module({
+  imports: [RefundModule],
   controllers: [BookingSessionController, BookingController, PartnerBookingController],
   providers: [BookingSessionService, BookingService, OfflineBookingService, PartnerBookingService],
   exports: [BookingService, BookingSessionService, OfflineBookingService, PartnerBookingService],

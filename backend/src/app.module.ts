@@ -30,6 +30,7 @@ import { SupportModule } from './modules/support/support.module';
 import { PlatformModule } from './modules/platform/platform.module';
 import { WebhookModule } from './modules/webhook/webhook.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { RefundModule } from './modules/refund/refund.module';
 
 @Controller('health')
 class HealthController {
@@ -69,6 +70,7 @@ class HealthController {
     PlatformModule,
     WebhookModule,
     ChatModule,
+    RefundModule,
   ],
   controllers: [HealthController],
   providers: [

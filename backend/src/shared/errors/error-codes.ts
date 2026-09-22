@@ -109,6 +109,9 @@ export const ErrorCode = {
   PAYMENT_AMOUNT_MISMATCH: 'PAYMENT_AMOUNT_MISMATCH',
   PAYMENT_PROVIDER_ERROR: 'PAYMENT_PROVIDER_ERROR',
   REFUND_INELIGIBLE: 'REFUND_INELIGIBLE',
+  REFUND_REQUEST_NOT_FOUND: 'REFUND_REQUEST_NOT_FOUND',
+  REFUND_REQUEST_INVALID_STATE: 'REFUND_REQUEST_INVALID_STATE',
+  BOOKING_SESSION_EXPIRED_REFUND_QUEUED: 'BOOKING_SESSION_EXPIRED_REFUND_QUEUED',
 
   // Idempotency
   IDEMPOTENCY_KEY_CONFLICT: 'IDEMPOTENCY_KEY_CONFLICT',
@@ -226,6 +229,9 @@ export const ERROR_STATUS: Record<ErrorCodeKey, number> = {
   PAYMENT_AMOUNT_MISMATCH: 409,
   PAYMENT_PROVIDER_ERROR: 503,
   REFUND_INELIGIBLE: 409,
+  REFUND_REQUEST_NOT_FOUND: 404,
+  REFUND_REQUEST_INVALID_STATE: 409,
+  BOOKING_SESSION_EXPIRED_REFUND_QUEUED: 410,
 
   IDEMPOTENCY_KEY_CONFLICT: 409,
   IDEMPOTENCY_KEY_IN_FLIGHT: 409,
@@ -337,6 +343,9 @@ export const ERROR_MESSAGE: Record<ErrorCodeKey, string> = {
   PAYMENT_AMOUNT_MISMATCH: 'Payment amount does not match the booking total.',
   PAYMENT_PROVIDER_ERROR: 'Payment provider returned an error.',
   REFUND_INELIGIBLE: 'This booking is not eligible for a refund.',
+  REFUND_REQUEST_NOT_FOUND: 'Refund request not found.',
+  REFUND_REQUEST_INVALID_STATE: 'Refund request is not in a state that allows this action.',
+  BOOKING_SESSION_EXPIRED_REFUND_QUEUED: 'This booking session lapsed after payment was captured. A refund has been queued for admin review.',
 
   IDEMPOTENCY_KEY_CONFLICT: 'Idempotency key was reused with a different request body.',
   IDEMPOTENCY_KEY_IN_FLIGHT: 'A request with this idempotency key is already in flight.',
