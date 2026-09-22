@@ -33,6 +33,7 @@ import { BookingService } from '../../src/modules/booking/booking.service';
 import { CustomersService } from '../../src/modules/customers/customers.service';
 import { OutboxService } from '../../src/shared/outbox/outbox.service';
 import { AuditService } from '../../src/shared/audit/audit.service';
+import { RefundService } from '../../src/modules/refund/refund.service';
 import { ChatRecommenderService } from '../../src/modules/chat/chat-recommender.service';
 import { ChatToolsService } from '../../src/modules/chat/chat-tools.service';
 import { ChatAgentService } from '../../src/modules/chat/chat-agent.service';
@@ -107,12 +108,19 @@ describe('chat module (E2E)', () => {
       fakeRazorpay as unknown as ConstructorParameters<typeof BookingSessionService>[3],
       availability,
     );
+    const refunds = new RefundService(
+      prisma as unknown as ConstructorParameters<typeof RefundService>[0],
+      outbox,
+      audit,
+      fakeRazorpay as unknown as ConstructorParameters<typeof RefundService>[3],
+    );
     bookingService = new BookingService(
       prisma as unknown as ConstructorParameters<typeof BookingService>[0],
       outbox,
       audit,
       fakeRazorpay as unknown as ConstructorParameters<typeof BookingService>[3],
       availability,
+      refunds,
     );
 
     const tools = new ChatToolsService(
